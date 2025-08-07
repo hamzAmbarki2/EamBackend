@@ -1,4 +1,4 @@
-package com.eam.planning.security;
+package com.eam.workorder.security;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -40,27 +40,27 @@ public class JwtFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     
                     // Success logging
-                    System.out.println("✅ JWT AUTH SUCCESS - Planning Service");
+                    System.out.println("✅ JWT AUTH SUCCESS - Work Order Service");
                     System.out.println("├── User: " + email + " (Role: " + role + ")");
                     System.out.println("├── Endpoint: " + method + " " + endpoint);
                     System.out.println("└── Time: " + java.time.LocalDateTime.now());
                     
                 } else {
                     // Token validation failed
-                    System.err.println("❌ JWT VALIDATION FAILED - Planning Service");
+                    System.err.println("❌ JWT VALIDATION FAILED - Work Order Service");
                     System.err.println("├── Endpoint: " + method + " " + endpoint);
                     System.err.println("├── Issue: Invalid or expired token");
                     System.err.println("└── Time: " + java.time.LocalDateTime.now());
                 }
             } catch (Exception e) {
-                System.err.println("❌ JWT PROCESSING ERROR - Planning Service");
+                System.err.println("❌ JWT PROCESSING ERROR - Work Order Service");
                 System.err.println("├── Endpoint: " + method + " " + endpoint);
                 System.err.println("├── Error: " + e.getMessage());
                 System.err.println("└── Time: " + java.time.LocalDateTime.now());
             }
         } else if (!endpoint.contains("/swagger") && !endpoint.contains("/v3/api-docs")) {
             // Missing token for protected endpoint
-            System.err.println("⚠️  NO JWT TOKEN - Planning Service");
+            System.err.println("⚠️  NO JWT TOKEN - Work Order Service");
             System.err.println("├── Endpoint: " + method + " " + endpoint);
             System.err.println("├── Issue: Authorization header missing");
             System.err.println("└── Time: " + java.time.LocalDateTime.now());
