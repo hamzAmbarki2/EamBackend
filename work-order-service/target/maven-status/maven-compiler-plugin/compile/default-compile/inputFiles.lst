@@ -1,7 +1,0 @@
-/workspace/work-order-service/src/main/java/com/eam/workorder/config/SecurityConfig.java
-/workspace/work-order-service/src/main/java/com/eam/workorder/control/OrdreTravailRestController.java
-/workspace/work-order-service/src/main/java/com/eam/workorder/service/IOrdreTravailService.java
-/workspace/work-order-service/src/main/java/com/eam/workorder/repository/OrdreTravailRepository.java
-/workspace/work-order-service/src/main/java/com/eam/workorder/entity/OrdreTravail.java
-/workspace/work-order-service/src/main/java/com/eam/workorder/WorkOrderServiceApplication.java
-/workspace/work-order-service/src/main/java/com/eam/workorder/service/OrdreTravailServiceImpl.java
