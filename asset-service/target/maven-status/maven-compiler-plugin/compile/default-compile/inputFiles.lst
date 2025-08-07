@@ -1,0 +1,8 @@
+/workspace/asset-service/src/main/java/com/eam/asset/config/SecurityConfig.java
+/workspace/asset-service/src/main/java/com/eam/asset/service/IMachineService.java
+/workspace/asset-service/src/main/java/com/eam/asset/entity/Machine.java
+/workspace/asset-service/src/main/java/com/eam/asset/control/MachineRestController.java
+/workspace/asset-service/src/main/java/com/eam/asset/repository/MachineRepository.java
+/workspace/asset-service/src/main/java/com/eam/asset/enums/Statut.java
+/workspace/asset-service/src/main/java/com/eam/asset/AssetServiceApplication.java
+/workspace/asset-service/src/main/java/com/eam/asset/service/MachineServiceImpl.java

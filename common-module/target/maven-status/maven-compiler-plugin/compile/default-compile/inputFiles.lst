@@ -1,6 +1,6 @@
-C:\Users\Admin\Downloads\eam-backend-with-email\eam-backend\eam-backend\common-module\src\main\java\com\eam\common\interfaces\IOrdreIntervention.java
-C:\Users\Admin\Downloads\eam-backend-with-email\eam-backend\eam-backend\common-module\src\main\java\com\eam\common\entity\BaseOrdreTravail.java
-C:\Users\Admin\Downloads\eam-backend-with-email\eam-backend\eam-backend\common-module\src\main\java\com\eam\common\enums\Priorite.java
-C:\Users\Admin\Downloads\eam-backend-with-email\eam-backend\eam-backend\common-module\src\main\java\com\eam\common\enums\Statut.java
-C:\Users\Admin\Downloads\eam-backend-with-email\eam-backend\eam-backend\common-module\src\main\java\com\eam\common\entity\BaseOrdreIntervention.java
-C:\Users\Admin\Downloads\eam-backend-with-email\eam-backend\eam-backend\common-module\src\main\java\com\eam\common\interfaces\IOrdreTravail.java
+/workspace/common-module/src/main/java/com/eam/common/interfaces/IOrdreTravail.java
+/workspace/common-module/src/main/java/com/eam/common/entity/BaseOrdreTravail.java
+/workspace/common-module/src/main/java/com/eam/common/entity/BaseOrdreIntervention.java
+/workspace/common-module/src/main/java/com/eam/common/enums/Statut.java
+/workspace/common-module/src/main/java/com/eam/common/enums/Priorite.java
+/workspace/common-module/src/main/java/com/eam/common/interfaces/IOrdreIntervention.java

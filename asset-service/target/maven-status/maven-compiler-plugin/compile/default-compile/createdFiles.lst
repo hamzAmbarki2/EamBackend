@@ -1,0 +1,8 @@
+com/eam/asset/enums/Statut.class
+com/eam/asset/service/MachineServiceImpl.class
+com/eam/asset/AssetServiceApplication.class
+com/eam/asset/entity/Machine.class
+com/eam/asset/control/MachineRestController.class
+com/eam/asset/config/SecurityConfig.class
+com/eam/asset/service/IMachineService.class
+com/eam/asset/repository/MachineRepository.class
