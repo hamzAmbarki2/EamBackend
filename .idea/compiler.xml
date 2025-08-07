@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="intervention-service" />
+        <module name="work-order-service" />
+        <module name="planning" />
+        <module name="work-order-service (4)" />
+        <module name="common-module" />
+        <module name="api-gateway" />
+        <module name="asset-service" />
+        <module name="user-service" />
+        <module name="work-order-service (3)" />
+        <module name="eureka-server" />
+        <module name="work-order-service (2)" />
+        <module name="work-order-service (1)" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="eam-common-models" target="17" />
+      <module name="maintenance" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="api-gateway" options="-parameters" />
+      <module name="asset-service" options="-parameters" />
+      <module name="common-module" options="-parameters" />
+      <module name="eam-common-models" options="-parameters" />
+      <module name="eureka-server" options="-parameters" />
+      <module name="intervention-service" options="-parameters" />
+      <module name="maintenance" options="-parameters" />
+      <module name="planning" options="-parameters" />
+      <module name="user-service" options="-parameters" />
+      <module name="work-order-service" options="-parameters" />
+      <module name="work-order-service (1)" options="-parameters" />
+      <module name="work-order-service (2)" options="-parameters" />
+      <module name="work-order-service (3)" options="-parameters" />
+      <module name="work-order-service (4)" options="-parameters" />
+    </option>
+  </component>
+</project>
