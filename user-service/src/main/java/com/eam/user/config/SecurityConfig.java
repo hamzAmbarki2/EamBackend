@@ -32,18 +32,26 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
+                        // Public endpoints - no authentication required
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/api/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/login",
                                 "/login?error"
-                        ).permitAll() // Permit access to authentication endpoints, Swagger UI, and login pages
-                        .requestMatchers("/api/**").authenticated() // All other /api/** requests require authentication
-                        .anyRequest().permitAll() // Allow all other requests (e.g., static resources, root path)
+                        ).permitAll()
+                        
+                        // ADMIN - Full access to user management
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        
+                        // Profile access - all authenticated users can view/update their own profile
+                        .requestMatchers("/api/profile/**").authenticated()
+                        
+                        // All other API requests require authentication
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
