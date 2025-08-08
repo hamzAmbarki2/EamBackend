@@ -1,6 +1,7 @@
 package com.eam.planning.entity;
 
 import com.eam.planning.enums.TypePlanning;
+import com.eam.common.enums.DepartmentType;
 import java.util.Date;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,5 +27,8 @@ public class Planning {
 
     @Enumerated(EnumType.STRING)
     private TypePlanning typePlanning;
+
+    @Enumerated(EnumType.STRING)
+    private DepartmentType department;
 
 }
