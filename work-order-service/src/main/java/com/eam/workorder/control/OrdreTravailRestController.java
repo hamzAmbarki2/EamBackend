@@ -97,6 +97,39 @@ public class OrdreTravailRestController {
         }
     }
 
+    @PutMapping("/assign-ordreTravail/{id}")
+    public ResponseEntity<OrdreTravail> assignOrdreTravail(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @PathVariable Long id, @RequestParam Long technicienId) {
+        String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
+        String role = token != null ? jwtUtil.getRoleFromToken(token) : null;
+        String department = token != null ? jwtUtil.getDepartmentFromToken(token) : null;
+        if (role == null) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        OrdreTravail ordre = ordreTravailService.retrieveOrdreTravail(id);
+        if (ordre == null) return ResponseEntity.notFound().build();
+        if (role.equals("ADMIN") || ((role.equals("CHEFOP") || role.equals("CHEFTECH")) && department != null && ordre.getDepartment() != null && ordre.getDepartment().name().equals(department))) {
+            ordre.setAssignedTo(technicienId);
+            return ResponseEntity.ok(ordreTravailService.modifyOrdreTravail(ordre));
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
+    @PutMapping("/update-status-ordreTravail/{id}")
+    public ResponseEntity<OrdreTravail> updateStatusOrdreTravail(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @PathVariable Long id, @RequestParam String statut) {
+        String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
+        String role = token != null ? jwtUtil.getRoleFromToken(token) : null;
+        Long userId = token != null ? jwtUtil.getUserIdFromToken(token) : null;
+        OrdreTravail ordre = ordreTravailService.retrieveOrdreTravail(id);
+        if (ordre == null) return ResponseEntity.notFound().build();
+        if (role == null) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (role.equals("ADMIN") || role.equals("CHEFOP") || role.equals("CHEFTECH") || (role.equals("TECHNICIEN") && userId != null && ordre.getAssignedTo() != null && ordre.getAssignedTo().equals(userId))) {
+            // Assume statut is a valid enum value; add validation as needed
+            ordre.setStatut(com.eam.common.enums.Statut.valueOf(statut));
+            return ResponseEntity.ok(ordreTravailService.modifyOrdreTravail(ordre));
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+    }
+
     @DeleteMapping("/delete-ordreTravail/{id}")
     public ResponseEntity<Void> deleteOrdreTravail(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @PathVariable Long id) {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
