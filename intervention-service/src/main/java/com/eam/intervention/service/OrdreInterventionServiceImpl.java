@@ -35,7 +35,34 @@ public class OrdreInterventionServiceImpl implements IOrdreInterventionService {
 
     @Override
     public OrdreIntervention modifyOrdreIntervention(OrdreIntervention ordreIntervention) {
+        if (ordreIntervention.getId() != null) {
+            OrdreIntervention existing = retrieveOrdreIntervention(ordreIntervention.getId());
+            if (existing != null && ordreIntervention.getStatut() != null && existing.getStatut() != null) {
+                validateStatusTransition(existing.getStatut(), ordreIntervention.getStatut());
+            }
+        }
         return ordreInterventionRepository.save(ordreIntervention);
+    }
+
+    private void validateStatusTransition(com.eam.common.enums.Statut from, com.eam.common.enums.Statut to) {
+        switch (from) {
+            case EN_ATTENTE -> {
+                if (!(to == com.eam.common.enums.Statut.EN_COURS || to == com.eam.common.enums.Statut.ANNULÉ)) {
+                    throw new IllegalArgumentException("Invalid transition from EN_ATTENTE to " + to);
+                }
+            }
+            case EN_COURS -> {
+                if (!(to == com.eam.common.enums.Statut.TERMINÉ || to == com.eam.common.enums.Statut.ANNULÉ)) {
+                    throw new IllegalArgumentException("Invalid transition from EN_COURS to " + to);
+                }
+            }
+            case TERMINÉ, ANNULÉ -> {
+                if (to != from) {
+                    throw new IllegalArgumentException("Cannot transition from final state " + from + " to " + to);
+                }
+            }
+            default -> {}
+        }
     }
 }
     

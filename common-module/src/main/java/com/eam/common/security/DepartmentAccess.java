@@ -1,10 +1,9 @@
-package com.eam.workorder.security;
+package com.eam.common.security;
 
 import java.lang.annotation.*;
 
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface RoleAllowed {
-    String[] value();
+public @interface DepartmentAccess {
 }

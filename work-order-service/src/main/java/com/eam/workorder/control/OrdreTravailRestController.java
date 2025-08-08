@@ -15,8 +15,8 @@ import com.eam.common.enums.DepartmentType;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.eam.workorder.security.RoleAllowed;
-import com.eam.workorder.security.DepartmentAccess;
+import com.eam.common.security.RoleAllowed;
+import com.eam.common.security.DepartmentAccess;
 
 @RestController
 @RequestMapping("/api/ordreTravail")
@@ -158,7 +158,7 @@ public class OrdreTravailRestController {
             return ResponseEntity.ok().build();
         } else {
             log.warn("Access denied for deleteOrdreTravail id={} by userId={}, role={}, department={}", id, userId, role, department);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Access denied: insufficient permissions to delete work order."));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 }

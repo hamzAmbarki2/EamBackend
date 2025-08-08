@@ -1,44 +1,48 @@
-package com.eam.workorder.security;
+package com.eam.common.security;
 
-import com.eam.workorder.config.JwtUtil;
+import com.eam.common.web.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
 @Aspect
 @Component
 public class PermissionAspect {
+    private static final Logger log = LoggerFactory.getLogger(PermissionAspect.class);
+
     @Autowired
     private JwtUtil jwtUtil;
 
-    @Around("@annotation(com.eam.workorder.security.RoleAllowed)")
+    @Around("@annotation(com.eam.common.security.RoleAllowed)")
     public Object checkRole(ProceedingJoinPoint joinPoint) throws Throwable {
         Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
         RoleAllowed roleAllowed = method.getAnnotation(RoleAllowed.class);
         if (roleAllowed == null) {
             roleAllowed = method.getDeclaringClass().getAnnotation(RoleAllowed.class);
         }
-        String[] allowedRoles = roleAllowed.value();
+        String[] allowedRoles = roleAllowed != null ? roleAllowed.value() : new String[]{};
         String role = extractRoleFromRequest();
         if (role == null || Arrays.stream(allowedRoles).noneMatch(r -> r.equals(role))) {
+            log.warn("Access denied (role) on {}.{} for role={}", method.getDeclaringClass().getSimpleName(), method.getName(), role);
             throw new AccessDeniedException("Access denied: role not allowed");
         }
         return joinPoint.proceed();
     }
 
-    @Around("@annotation(com.eam.workorder.security.DepartmentAccess)")
+    @Around("@annotation(com.eam.common.security.DepartmentAccess)")
     public Object checkDepartment(ProceedingJoinPoint joinPoint) throws Throwable {
-        // This is a placeholder for department-level logic; you can expand as needed
         String department = extractDepartmentFromRequest();
         if (department == null) {
             throw new AccessDeniedException("Access denied: missing department");
