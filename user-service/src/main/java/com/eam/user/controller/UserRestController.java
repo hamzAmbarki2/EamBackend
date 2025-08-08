@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import com.eam.user.security.JwtProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/api/user")
@@ -16,6 +18,9 @@ import java.util.List;
 public class UserRestController {
 
     private final IUserService userService;
+
+    @Autowired
+    private JwtProvider jwtProvider;
 
     @GetMapping("/retrieve-all-users")
     public List<UserDto> getUsers() {
@@ -41,6 +46,23 @@ public class UserRestController {
     @DeleteMapping("/delete-user/{id}")
     public void deleteUser(@PathVariable Long id) {
         userService.removeUser(id);
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<UserDto> getProfile(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
+        if (token == null) {
+            return ResponseEntity.status(401).build();
+        }
+        String email = jwtProvider.getEmailFromToken(token);
+        String role = jwtProvider.getRoleFromToken(token);
+        // All roles can access their own profile
+        UserDto user = userService.getCurrentUserProfile(email);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        // No further department check needed for self-profile
+        return ResponseEntity.ok(user);
     }
 }
 

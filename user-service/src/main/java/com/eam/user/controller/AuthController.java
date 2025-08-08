@@ -179,5 +179,16 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String authHeader) {
+        // For JWT, logout is usually handled client-side by deleting the token.
+        // Optionally, implement token blacklisting here.
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No token provided");
+        }
+        // All authenticated roles can logout
+        return ResponseEntity.ok().body("Logged out successfully");
+    }
 }
 

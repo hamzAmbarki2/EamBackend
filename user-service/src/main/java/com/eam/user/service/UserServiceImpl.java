@@ -65,6 +65,12 @@ public class UserServiceImpl implements IUserService {
         return convertToDto(savedUser);
     }
 
+    @Override
+    public UserDto getCurrentUserProfile(String email) {
+        User user = userRepository.findByEmail(email).orElse(null);
+        return user != null ? convertToDto(user) : null;
+    }
+
     private UserDto convertToDto(User user) {
         UserDto dto = new UserDto();
         dto.setId(user.getId());
