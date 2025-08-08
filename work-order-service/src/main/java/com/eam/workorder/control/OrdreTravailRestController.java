@@ -39,12 +39,9 @@ public class OrdreTravailRestController {
         Long userId = token != null ? jwtUtil.getUserIdFromToken(token) : null;
         if (role.equals("ADMIN")) {
             return ordreTravailService.retrieveAllOrdreTravails();
-        } else if (role.equals("CHEFOP") || role.equals("CHEFTECH")) {
+        } else if (role.equals("CHEFOP") || role.equals("CHEFTECH") || role.equals("TECHNICIEN")) {
             if (department == null) return List.of();
             return ordreTravailService.retrieveOrdreTravailsByDepartment(DepartmentType.valueOf(department));
-        } else if (role.equals("TECHNICIEN")) {
-            if (userId == null) return List.of();
-            return ordreTravailService.retrieveOrdreTravailsByAssignedTo(userId);
         } else {
             return List.of();
         }
@@ -61,9 +58,7 @@ public class OrdreTravailRestController {
         if (ordre == null) return ResponseEntity.notFound().build();
         if (role.equals("ADMIN")) {
             return ResponseEntity.ok(ordre);
-        } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH")) && department != null && ordre.getDepartment() != null && ordre.getDepartment().name().equals(department)) {
-            return ResponseEntity.ok(ordre);
-        } else if (role.equals("TECHNICIEN") && userId != null && ordre.getAssignedTo() != null && ordre.getAssignedTo().equals(userId)) {
+        } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH") || role.equals("TECHNICIEN")) && department != null && ordre.getDepartment() != null && ordre.getDepartment().name().equals(department)) {
             return ResponseEntity.ok(ordre);
         } else {
             log.warn("Access denied for getOrdreTravail id={} by userId={}, role={}, department={}", id, userId, role, department);
