@@ -2,6 +2,8 @@ com/eam/common/security/annotations/DepartmentAccess.class
 com/eam/common/web/ApiErrorCode.class
 com/eam/common/security/annotations/DepartmentAccess$Ownership.class
 com/eam/common/security/annotations/RoleAllowed.class
+com/eam/common/enums/DepartmentType.class
 com/eam/common/security/aspect/AuthorizationAspect.class
+com/eam/common/security/department/DepartmentContext.class
 com/eam/common/web/ErrorResponse.class
 com/eam/common/web/GlobalExceptionHandler.class

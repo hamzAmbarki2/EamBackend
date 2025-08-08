@@ -1,4 +1,4 @@
-/workspace/common-module/src/main/java/com/eam/common/web/GlobalExceptionHandler.java
+/workspace/common-module/src/main/java/com/eam/common/enums/DepartmentType.java
 /workspace/common-module/src/main/java/com/eam/common/interfaces/IOrdreTravail.java
 /workspace/common-module/src/main/java/com/eam/common/security/annotations/RoleAllowed.java
 /workspace/common-module/src/main/java/com/eam/common/entity/BaseOrdreTravail.java
@@ -6,7 +6,9 @@
 /workspace/common-module/src/main/java/com/eam/common/web/ApiErrorCode.java
 /workspace/common-module/src/main/java/com/eam/common/web/ErrorResponse.java
 /workspace/common-module/src/main/java/com/eam/common/enums/Statut.java
-/workspace/common-module/src/main/java/com/eam/common/security/aspect/AuthorizationAspect.java
-/workspace/common-module/src/main/java/com/eam/common/enums/Priorite.java
 /workspace/common-module/src/main/java/com/eam/common/interfaces/IOrdreIntervention.java
 /workspace/common-module/src/main/java/com/eam/common/security/annotations/DepartmentAccess.java
+/workspace/common-module/src/main/java/com/eam/common/web/GlobalExceptionHandler.java
+/workspace/common-module/src/main/java/com/eam/common/security/department/DepartmentContext.java
+/workspace/common-module/src/main/java/com/eam/common/security/aspect/AuthorizationAspect.java
+/workspace/common-module/src/main/java/com/eam/common/enums/Priorite.java

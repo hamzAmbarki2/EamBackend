@@ -2,6 +2,7 @@ package com.eam.workorder.control;
 
 import com.eam.workorder.entity.OrdreTravail;
 import com.eam.workorder.service.IOrdreTravailService;
+import com.eam.common.security.annotations.RoleAllowed;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,27 +17,32 @@ public class OrdreTravailRestController {
 
     private final IOrdreTravailService ordreTravailService;
     
+    @RoleAllowed({"ADMIN", "CHEFOP", "CHEFTECH", "TECHNICIEN"})
     @GetMapping("/retrieve-all-ordreTravails")
     public List<OrdreTravail> getOrdreTravails() {
         return ordreTravailService.retrieveAllOrdreTravails();
     }
 
+    @RoleAllowed({"ADMIN", "CHEFOP", "CHEFTECH", "TECHNICIEN"})
     @GetMapping("/retrieve-ordreTravail/{id}")
     public ResponseEntity<OrdreTravail> getOrdreTravail(@PathVariable Long id) {
         OrdreTravail dto = ordreTravailService.retrieveOrdreTravail(id);
         return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
 
+    @RoleAllowed({"ADMIN", "CHEFOP", "CHEFTECH"})
     @PostMapping("/add-ordreTravail")
     public OrdreTravail addOrdreTravail(@Valid @RequestBody OrdreTravail ordreTravail) {
         return ordreTravailService.addOrdreTravail(ordreTravail);
     }
 
+    @RoleAllowed({"ADMIN", "CHEFOP", "CHEFTECH"})
     @PutMapping("/update-ordreTravail")
     public OrdreTravail updateOrdreTravail(@Valid @RequestBody OrdreTravail ordreTravail) {
         return ordreTravailService.modifyOrdreTravail(ordreTravail);
     }
 
+    @RoleAllowed({"ADMIN"})
     @DeleteMapping("/delete-ordreTravail/{id}")
     public void deleteOrdreTravail(@PathVariable Long id) {
         ordreTravailService.removeOrdreTravail(id);

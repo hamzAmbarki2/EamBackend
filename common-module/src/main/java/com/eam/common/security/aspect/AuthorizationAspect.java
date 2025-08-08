@@ -2,6 +2,7 @@ package com.eam.common.security.aspect;
 
 import com.eam.common.security.annotations.DepartmentAccess;
 import com.eam.common.security.annotations.RoleAllowed;
+import com.eam.common.security.department.DepartmentContext;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -47,14 +48,23 @@ public class AuthorizationAspect {
         return pjp.proceed();
     }
 
-    @Around("@annotation(com.eam.common.security.annotations.DepartmentAccess) || @within(com.eam.common.security.annotations.DepartmentAccess)")
-    public Object checkDepartment(ProceedingJoinPoint pjp) throws Throwable {
-        // For now, rely on SecurityContext details set by JWT filter (department in details)
+    @Around("@annotation(depAccess) || @within(com.eam.common.security.annotations.DepartmentAccess)")
+    public Object checkDepartment(ProceedingJoinPoint pjp, DepartmentAccess depAccess) throws Throwable {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             throw new org.springframework.security.access.AccessDeniedException("Unauthenticated");
         }
-        // Placeholder for department access evaluation. Extend with resource loading and comparison.
+        Set<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
+        boolean isAdmin = roles.contains("ROLE_ADMIN");
+        if (isAdmin) {
+            return pjp.proceed();
+        }
+        String currentDept = DepartmentContext.currentDepartmentOrNull();
+        if (currentDept == null || currentDept.isBlank()) {
+            log.warn("Access denied for user {}: no department set in token", auth.getName());
+            throw new org.springframework.security.access.AccessDeniedException("Forbidden");
+        }
+        // TODO: Extend to load resource by idParam and compare its department
         return pjp.proceed();
     }
 }
