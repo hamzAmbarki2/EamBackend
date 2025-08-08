@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/user")
@@ -41,6 +42,24 @@ public class UserRestController {
     @DeleteMapping("/delete-user/{id}")
     public void deleteUser(@PathVariable Long id) {
         userService.removeUser(id);
+    }
+
+    @GetMapping("/profile")
+    public UserDto getProfile() {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userService.getCurrentUserProfile(email);
+    }
+
+    @PutMapping("/profile")
+    public UserDto updateProfile(@Valid @RequestBody UserDto userDto) {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return userService.updateCurrentUserProfile(email, userDto);
+    }
+
+    @PostMapping("/logout")
+    public void logout() {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        userService.logout(email);
     }
 }
 
