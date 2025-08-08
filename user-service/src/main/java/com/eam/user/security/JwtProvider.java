@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.UUID;
 
 @Component("jwtProvider")
 public class JwtProvider {
@@ -31,6 +32,21 @@ public class JwtProvider {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role)
+                .setId(UUID.randomUUID().toString())
+                .setIssuedAt(new Date())
+                .setExpiration(expiryDate)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    public String generateToken(String email, String role, Long userId, String department) {
+        Date expiryDate = new Date(System.currentTimeMillis() + jwtExpiration);
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("role", role)
+                .claim("userId", userId)
+                .claim("department", department)
+                .setId(UUID.randomUUID().toString())
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
@@ -55,6 +71,28 @@ public class JwtProvider {
                 .getBody();
 
         return claims.get("role", String.class);
+    }
+
+    public String getDepartmentFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("department", String.class);
+    }
+
+    public Long getUserIdFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        Object id = claims.get("userId");
+        if (id instanceof Integer) return ((Integer) id).longValue();
+        if (id instanceof Long) return (Long) id;
+        if (id instanceof String) return Long.valueOf((String) id);
+        return null;
     }
 
     public boolean validateToken(String token) {

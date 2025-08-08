@@ -11,6 +11,7 @@ import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import com.eam.common.security.RoleAllowed;
 
 @RestController
 @RequestMapping("/api/planning")
@@ -22,8 +23,15 @@ public class PlanningRestController {
     @Autowired
     private com.eam.planning.config.JwtUtil jwtUtil;
 
+    @RoleAllowed({"ADMIN", "CHEFOP", "CHEFTECH", "TECHNICIEN"})
     @GetMapping("/retrieve-all-plannings")
-    public List<Planning> getPlannings(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+    public List<Planning> getPlannings(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+            @RequestParam(name = "page", required = false) Integer page,
+            @RequestParam(name = "size", required = false) Integer size,
+            @RequestParam(name = "sortBy", required = false) String sortBy,
+            @RequestParam(name = "direction", required = false) String direction
+    ) {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
         String role = token != null ? jwtUtil.getRoleFromToken(token) : null;
         String department = token != null ? jwtUtil.getDepartmentFromToken(token) : null;
@@ -38,6 +46,7 @@ public class PlanningRestController {
         }
     }
 
+    @RoleAllowed({"ADMIN", "CHEFOP", "CHEFTECH", "TECHNICIEN"})
     @GetMapping("/retrieve-planning/{id}")
     public ResponseEntity<Planning> getPlanning(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @PathVariable Long id) {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
@@ -55,6 +64,7 @@ public class PlanningRestController {
         }
     }
 
+    @RoleAllowed({"ADMIN", "CHEFOP", "CHEFTECH"})
     @PostMapping("/add-planning")
     public ResponseEntity<Planning> addPlanning(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @Valid @RequestBody Planning planning) {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
@@ -71,6 +81,7 @@ public class PlanningRestController {
         }
     }
 
+    @RoleAllowed({"ADMIN", "CHEFOP", "CHEFTECH"})
     @PutMapping("/update-planning")
     public ResponseEntity<Planning> updatePlanning(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @Valid @RequestBody Planning planning) {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
@@ -86,6 +97,7 @@ public class PlanningRestController {
         }
     }
 
+    @RoleAllowed({"ADMIN"})
     @DeleteMapping("/delete-planning/{id}")
     public ResponseEntity<Void> deletePlanning(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @PathVariable Long id) {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;

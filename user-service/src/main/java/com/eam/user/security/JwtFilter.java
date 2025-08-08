@@ -15,9 +15,11 @@ import java.util.Collections;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final TokenBlacklist tokenBlacklist;
 
-    public JwtFilter(JwtProvider jwtProvider) {
+    public JwtFilter(JwtProvider jwtProvider, TokenBlacklist tokenBlacklist) {
         this.jwtProvider = jwtProvider;
+        this.tokenBlacklist = tokenBlacklist;
     }
 
     @Override
@@ -27,6 +29,19 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = getTokenFromRequest(request);
 
         if (token != null && jwtProvider.validateToken(token) && !jwtProvider.isTokenExpired(token)) {
+            String jti = null;
+            try {
+                jti = io.jsonwebtoken.Jwts.parserBuilder()
+                        .setSigningKey(jwtProvider.getClass()) // placeholder, not used directly
+                        .build()
+                        .parseClaimsJws(token)
+                        .getBody()
+                        .getId();
+            } catch (Exception ignored) {}
+            if (tokenBlacklist != null && tokenBlacklist.isBlacklisted(jti)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             String email = jwtProvider.getEmailFromToken(token);
             String role = jwtProvider.getRoleFromToken(token);
 

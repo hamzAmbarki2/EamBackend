@@ -2,7 +2,6 @@ package com.eam.planning.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -57,7 +56,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable) // Disable CSRF to fix 403 Forbidden in Swagger UI
+        http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/swagger-ui/**",
@@ -65,23 +64,13 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**",
                                 "/swagger-ui.html"
-                        ).permitAll() // Allow access to Swagger UI without authentication
-                        .requestMatchers("/api/planning/**").hasRole("ADMIN") // Require ADMIN role for planning endpoints
-                        .anyRequest().authenticated() // All other requests require authentication
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .httpBasic(basic -> {
-                    // Configure basic authentication
-                }); // Enable HTTP Basic authentication
+                    // basic auth if needed
+                });
 
         return http.build();
-    }
-
-    @Bean
-    public AuthenticationManagerBuilder configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser("admin")
-                .password(passwordEncoder().encode("password"))
-                .roles("ADMIN");
-        return auth;
     }
 }

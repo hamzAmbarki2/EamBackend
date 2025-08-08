@@ -71,7 +71,7 @@ public class AuthServiceImpl implements IAuthService {
         }
 
         log.info("Connexion réussie pour l'utilisateur : {}", user.getEmail());
-        return jwtProvider.generateToken(user.getEmail(), user.getRole().toString());
+        return jwtProvider.generateToken(user.getEmail(), user.getRole().toString(), user.getId(), user.getDepartment() != null ? user.getDepartment().name() : null);
     }
 
     @Override
