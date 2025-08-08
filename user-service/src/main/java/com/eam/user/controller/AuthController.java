@@ -4,6 +4,8 @@ import com.eam.user.dto.UserDto;
 import com.eam.user.dto.CredentialsDto;
 import com.eam.user.service.AuthServiceImpl;
 import com.eam.user.service.IAuthService;
+import com.eam.user.security.JwtProvider;
+import com.eam.user.security.TokenBlacklist;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,8 @@ import jakarta.validation.Valid;
 import java.util.Map;
 import java.util.HashMap;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -22,6 +26,8 @@ public class AuthController {
 
     private final IAuthService authService;
     private final AuthServiceImpl authServiceImpl; // Pour accéder aux méthodes spécifiques
+    private final TokenBlacklist tokenBlacklist;
+    private final JwtProvider jwtProvider;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody UserDto userDto) {
@@ -60,6 +66,23 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
             }
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+        if (bearer != null && bearer.startsWith("Bearer ")) {
+            String token = bearer.substring(7);
+            try {
+                String jti = jwtProvider.getJtiFromToken(token);
+                long expiry = jwtProvider.parseClaims(token).getExpiration().getTime();
+                tokenBlacklist.blacklist(jti, expiry);
+                return ResponseEntity.ok(Map.of("message", "Logged out"));
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Invalid token"));
+            }
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "No token provided"));
     }
 
     @GetMapping("/verify")

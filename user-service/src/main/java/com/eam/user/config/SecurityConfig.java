@@ -2,8 +2,10 @@ package com.eam.user.config;
 
 import com.eam.user.security.JwtFilter;
 import com.eam.user.security.JwtProvider;
+import com.eam.user.security.TokenBlacklist;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -15,11 +17,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
-    public JwtFilter jwtFilter(JwtProvider jwtProvider) {
-        return new JwtFilter(jwtProvider);
+    public JwtFilter jwtFilter(JwtProvider jwtProvider, TokenBlacklist tokenBlacklist) {
+        return new JwtFilter(jwtProvider, tokenBlacklist);
     }
 
     @Bean
@@ -34,16 +37,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/api/auth/**",
-                                "/api/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
-                                "/webjars/**",
-                                "/login",
-                                "/login?error"
-                        ).permitAll() // Permit access to authentication endpoints, Swagger UI, and login pages
-                        .requestMatchers("/api/**").authenticated() // All other /api/** requests require authentication
-                        .anyRequest().permitAll() // Allow all other requests (e.g., static resources, root path)
+                                "/webjars/**"
+                        ).permitAll()
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
