@@ -23,5 +23,11 @@ public interface IOrdreTravail {
     
     Priorite getPriorité();
     void setPriorité(Priorite priorité);
+
+    String getDepartment();
+    void setDepartment(String department);
+
+    Long getAssignedTechnicianId();
+    void setAssignedTechnicianId(Long assignedTechnicianId);
 }
 

@@ -47,5 +47,10 @@ public abstract class BaseOrdreIntervention implements IOrdreIntervention {
     // ID de l'ordre de travail pour la persistance
     @Column(name = "ordre_travail_id")
     private Long ordreTravailId;
+
+    @NotNull(message = "department cannot be null")
+    private String department;
+
+    private Long assignedTechnicianId;
 }
 

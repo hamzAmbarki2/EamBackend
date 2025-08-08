@@ -34,5 +34,10 @@ public abstract class BaseOrdreTravail implements IOrdreTravail {
     @NotNull(message = "Priorite cannot be null")
     @Enumerated(EnumType.STRING)
     private Priorite priorité;
+
+    @NotNull(message = "department cannot be null")
+    private String department;
+
+    private Long assignedTechnicianId;
 }
 

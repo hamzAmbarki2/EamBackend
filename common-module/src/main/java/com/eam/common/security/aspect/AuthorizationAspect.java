@@ -37,13 +37,14 @@ public class AuthorizationAspect {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             log.warn("Access denied: unauthenticated");
-            throw new org.springframework.security.access.AccessDeniedException("Unauthenticated");
+            throw new org.springframework.security.access.AccessDeniedException("Authentication is required for this operation.");
         }
         Set<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
         boolean allowed = Arrays.stream(roleAllowed.value()).anyMatch(r -> roles.contains("ROLE_" + r));
         if (!allowed) {
-            log.warn("Access denied for user {}: required roles {} but had {}", auth.getName(), Arrays.toString(roleAllowed.value()), roles);
-            throw new org.springframework.security.access.AccessDeniedException("Forbidden");
+            String msg = String.format("Forbidden: required role(s) %s but you have %s.", Arrays.toString(roleAllowed.value()), roles);
+            log.warn("Access denied for user {}: {}", auth.getName(), msg);
+            throw new org.springframework.security.access.AccessDeniedException(msg);
         }
         return pjp.proceed();
     }
@@ -52,7 +53,7 @@ public class AuthorizationAspect {
     public Object checkDepartment(ProceedingJoinPoint pjp, DepartmentAccess depAccess) throws Throwable {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
-            throw new org.springframework.security.access.AccessDeniedException("Unauthenticated");
+            throw new org.springframework.security.access.AccessDeniedException("Authentication is required for this operation.");
         }
         Set<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
         boolean isAdmin = roles.contains("ROLE_ADMIN");
@@ -61,10 +62,11 @@ public class AuthorizationAspect {
         }
         String currentDept = DepartmentContext.currentDepartmentOrNull();
         if (currentDept == null || currentDept.isBlank()) {
-            log.warn("Access denied for user {}: no department set in token", auth.getName());
-            throw new org.springframework.security.access.AccessDeniedException("Forbidden");
+            String msg = "Forbidden: your token does not include a department; access is department-restricted.";
+            log.warn("Access denied for user {}: {}", auth.getName(), msg);
+            throw new org.springframework.security.access.AccessDeniedException(msg);
         }
-        // TODO: Extend to load resource by idParam and compare its department
+        // TODO: Extend to load resource by idParam and compare its department; if mismatch, throw detailed message
         return pjp.proceed();
     }
 }

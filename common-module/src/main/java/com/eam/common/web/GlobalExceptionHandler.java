@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({org.springframework.security.access.AccessDeniedException.class})
     public ResponseEntity<ErrorResponse> handleAccessDenied(Exception ex, WebRequest request) {
         log.warn("Access denied: {}", ex.getMessage());
-        ErrorResponse body = buildBody(request, ApiErrorCode.FORBIDDEN, "Access denied", null);
+        ErrorResponse body = buildBody(request, ApiErrorCode.FORBIDDEN, ex.getMessage() != null ? ex.getMessage() : "Access denied", null);
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 

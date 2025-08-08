@@ -40,6 +40,9 @@ public class OrdreIntervention extends BaseOrdreIntervention {
         private java.util.Date dateCreation;
         @Enumerated(EnumType.STRING)
         private com.eam.common.enums.Priorite priorité;
+
+        private String department;
+        private Long assignedTechnicianId;
     }
 
     // Sync methods
