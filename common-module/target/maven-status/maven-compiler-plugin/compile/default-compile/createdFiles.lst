@@ -1,6 +1,7 @@
-com\eam\common\enums\Priorite.class
-com\eam\common\entity\BaseOrdreIntervention.class
-com\eam\common\interfaces\IOrdreIntervention.class
-com\eam\common\interfaces\IOrdreTravail.class
-com\eam\common\entity\BaseOrdreTravail.class
-com\eam\common\enums\Statut.class
+com/eam/common/security/annotations/DepartmentAccess.class
+com/eam/common/web/ApiErrorCode.class
+com/eam/common/security/annotations/DepartmentAccess$Ownership.class
+com/eam/common/security/annotations/RoleAllowed.class
+com/eam/common/security/aspect/AuthorizationAspect.class
+com/eam/common/web/ErrorResponse.class
+com/eam/common/web/GlobalExceptionHandler.class

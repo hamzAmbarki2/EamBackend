@@ -71,7 +71,8 @@ public class AuthServiceImpl implements IAuthService {
         }
 
         log.info("Connexion réussie pour l'utilisateur : {}", user.getEmail());
-        return jwtProvider.generateToken(user.getEmail(), user.getRole().toString());
+        return jwtProvider.generateToken(user.getEmail(), user.getRole().toString(),
+                user.getDepartment() != null ? user.getDepartment().name() : null);
     }
 
     @Override
@@ -144,8 +145,7 @@ public class AuthServiceImpl implements IAuthService {
     @Override
     public String refreshToken(String refreshToken) {
         // TODO: Implement refresh token logic
-        // Validate refresh token, generate new access token, etc.
-        return jwtProvider.generateToken("user@example.com", "USER");
+        return jwtProvider.generateToken("user@example.com", "USER", null);
     }
 
     public void resetPasswordWithToken(String token, String newPassword) {
