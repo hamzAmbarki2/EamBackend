@@ -9,4 +9,7 @@ public interface IUserService {
     UserDto addUser(UserDto userDto);
     void removeUser(Long id);
     UserDto modifyUser(UserDto userDto);
+    UserDto getCurrentUserProfile(String email);
+    UserDto updateCurrentUserProfile(String email, UserDto userDto);
+    void logout(String email); // Stateless, for frontend
 }
