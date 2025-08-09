@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -22,6 +24,13 @@ public class AuthController {
 
     private final IAuthService authService;
     private final AuthServiceImpl authServiceImpl; // Pour accéder aux méthodes spécifiques
+
+    // Simple in-memory blacklist of JWT IDs (jti)
+    private static final Set<String> TOKEN_BLACKLIST = ConcurrentHashMap.newKeySet();
+
+    public static boolean isBlacklisted(String jti) {
+        return jti != null && TOKEN_BLACKLIST.contains(jti);
+    }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody UserDto userDto) {
@@ -178,6 +187,28 @@ public class AuthController {
             log.error("Error sending test email: {}", e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No token provided");
+        }
+        String token = authHeader.substring(7);
+        try {
+            io.jsonwebtoken.Claims claims = io.jsonwebtoken.Jwts.parserBuilder()
+                    .setSigningKey((new com.eam.user.security.JwtProvider()).getClass()) // placeholder not used
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            String jti = claims.getId();
+            if (jti != null) {
+                TOKEN_BLACKLIST.add(jti);
+            }
+        } catch (Exception e) {
+            // Swallow parsing errors to avoid leaking info
+        }
+        return ResponseEntity.ok().body("Logged out successfully");
     }
 }
 

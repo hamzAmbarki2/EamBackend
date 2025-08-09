@@ -1,5 +1,6 @@
 package com.eam.common.entity;
 
+import com.eam.common.enums.DepartmentType;
 import com.eam.common.enums.Priorite;
 import com.eam.common.interfaces.IOrdreTravail;
 import java.util.Date;
@@ -34,5 +35,11 @@ public abstract class BaseOrdreTravail implements IOrdreTravail {
     @NotNull(message = "Priorite cannot be null")
     @Enumerated(EnumType.STRING)
     private Priorite priorité;
+
+    @Enumerated(EnumType.STRING)
+    private DepartmentType department;
+
+    // ID of the assigned technicien (nullable)
+    private Long assignedTo;
 }
 

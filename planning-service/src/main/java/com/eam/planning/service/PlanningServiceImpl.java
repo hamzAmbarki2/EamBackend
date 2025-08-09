@@ -2,6 +2,7 @@ package com.eam.planning.service;
 
 import com.eam.planning.entity.Planning;
 import com.eam.planning.repository.PlanningRepository;
+import com.eam.common.enums.DepartmentType;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -36,5 +37,10 @@ public class PlanningServiceImpl implements IPlanningService {
     @Override
     public Planning modifyPlanning(Planning planning) {
         return planningRepository.save(planning);
+    }
+
+    @Override
+    public List<Planning> retrievePlanningsByDepartment(DepartmentType department) {
+        return planningRepository.findByDepartment(department);
     }
 }

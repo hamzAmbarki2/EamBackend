@@ -1,6 +1,6 @@
 package com.eam.user.entity;
 
-import com.eam.user.enums.DepartmentType;
+import com.eam.common.enums.DepartmentType;
 import com.eam.user.enums.Role;
 import com.eam.user.enums.StatusType;
 import jakarta.persistence.*;
