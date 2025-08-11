@@ -35,8 +35,11 @@ public class PermissionAspect {
         String[] allowedRoles = roleAllowed != null ? roleAllowed.value() : new String[]{};
         String role = extractRoleFromRequest();
         if (role == null || Arrays.stream(allowedRoles).noneMatch(r -> r.equals(role))) {
-            log.warn("Access denied (role) on {}.{} for role={}", method.getDeclaringClass().getSimpleName(), method.getName(), role);
-            throw new AccessDeniedException("Access denied: role not allowed");
+            String methodName = method.getDeclaringClass().getSimpleName() + "." + method.getName();
+            String allowed = String.join(", ", allowedRoles);
+            String message = "Forbidden: " + methodName + " requires roles [" + allowed + "] but current role is " + (role == null ? "null" : role);
+            log.warn("{}", message);
+            throw new AccessDeniedException(message);
         }
         return joinPoint.proceed();
     }

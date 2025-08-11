@@ -17,6 +17,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.eam.common.security.RoleAllowed;
+import org.springframework.security.access.AccessDeniedException;
 
 @RestController
 @RequestMapping("/api/ordreTravail")
@@ -43,7 +44,9 @@ public class OrdreTravailRestController {
             if (department == null) return List.of();
             return ordreTravailService.retrieveOrdreTravailsByDepartment(DepartmentType.valueOf(department));
         } else {
-            return List.of();
+            String msg = "Access denied: Only ADMIN, CHEFOP, CHEFTECH, or TECHNICIEN with a department can list work orders (non-admins limited to their department).";
+            log.warn(msg);
+            throw new AccessDeniedException(msg);
         }
     }
 
@@ -61,8 +64,9 @@ public class OrdreTravailRestController {
         } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH") || role.equals("TECHNICIEN")) && department != null && ordre.getDepartment() != null && ordre.getDepartment().name().equals(department)) {
             return ResponseEntity.ok(ordre);
         } else {
-            log.warn("Access denied for getOrdreTravail id={} by userId={}, role={}, department={}", id, userId, role, department);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body((OrdreTravail) Map.of("error", "Access denied: insufficient permissions for this work order."));
+            String msg = "Access denied: Non-admins can only access work orders within their department.";
+            log.warn("{}", msg);
+            throw new AccessDeniedException(msg);
         }
     }
 
@@ -78,8 +82,9 @@ public class OrdreTravailRestController {
             ordreTravail.setDepartment(DepartmentType.valueOf(department));
             return ResponseEntity.ok(ordreTravailService.addOrdreTravail(ordreTravail));
         } else {
-            log.warn("Access denied for addOrdreTravail by role={}, department={}", role, department);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body((OrdreTravail) Map.of("error", "Access denied: insufficient permissions to add work order."));
+            String msg = "Access denied: Only ADMIN, or CHEF roles within their department, can add work orders.";
+            log.warn("{}", msg);
+            throw new AccessDeniedException(msg);
         }
     }
 
@@ -90,15 +95,24 @@ public class OrdreTravailRestController {
         String role = token != null ? workOrderJwtUtil.getRoleFromToken(token) : null;
         String department = token != null ? workOrderJwtUtil.getDepartmentFromToken(token) : null;
         Long userId = token != null ? workOrderJwtUtil.getUserIdFromToken(token) : null;
+        if (ordreTravail.getId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        OrdreTravail existing = ordreTravailService.retrieveOrdreTravail(ordreTravail.getId());
+        if (existing == null) return ResponseEntity.notFound().build();
         if (role.equals("ADMIN")) {
             return ResponseEntity.ok(ordreTravailService.modifyOrdreTravail(ordreTravail));
-        } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH")) && department != null && ordreTravail.getDepartment() != null && ordreTravail.getDepartment().name().equals(department)) {
+        } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH")) && department != null && existing.getDepartment() != null && existing.getDepartment().name().equals(department)) {
+            // enforce department scope on existing record and prevent department change
+            ordreTravail.setDepartment(existing.getDepartment());
             return ResponseEntity.ok(ordreTravailService.modifyOrdreTravail(ordreTravail));
-        } else if (role.equals("TECHNICIEN") && userId != null && ordreTravail.getAssignedTo() != null && ordreTravail.getAssignedTo().equals(userId)) {
+        } else if (role.equals("TECHNICIEN") && userId != null && existing.getAssignedTo() != null && existing.getAssignedTo().equals(userId)) {
+            // allow only if persisted assignment is to current user
             return ResponseEntity.ok(ordreTravailService.modifyOrdreTravail(ordreTravail));
         } else {
-            log.warn("Access denied for updateOrdreTravail id={} by userId={}, role={}, department={}", ordreTravail.getId(), userId, role, department);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body((OrdreTravail) Map.of("error", "Access denied: insufficient permissions to update work order."));
+            String msg = "Access denied: ADMIN can update any work order; CHEF roles only within their department; TECHNICIEN only if assigned.";
+            log.warn("{}", msg);
+            throw new AccessDeniedException(msg);
         }
     }
 
@@ -116,8 +130,9 @@ public class OrdreTravailRestController {
             log.info("Work order id={} assigned to technicienId={} by userId={}, role={}, department={}", id, technicienId, userId, role, department);
             return ResponseEntity.ok(ordreTravailService.modifyOrdreTravail(ordre));
         } else {
-            log.warn("Access denied for assignOrdreTravail id={} by userId={}, role={}, department={}", id, userId, role, department);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body((OrdreTravail) Map.of("error", "Access denied: insufficient permissions to assign work order."));
+            String msg = "Access denied: Only ADMIN, or CHEF roles within their department, can assign work orders.";
+            log.warn("{}", msg);
+            throw new AccessDeniedException(msg);
         }
     }
 
@@ -130,13 +145,15 @@ public class OrdreTravailRestController {
         Long userId = token != null ? workOrderJwtUtil.getUserIdFromToken(token) : null;
         OrdreTravail ordre = ordreTravailService.retrieveOrdreTravail(id);
         if (ordre == null) return ResponseEntity.notFound().build();
-        if (role.equals("ADMIN") || role.equals("CHEFOP") || role.equals("CHEFTECH") || (role.equals("TECHNICIEN") && userId != null && ordre.getAssignedTo() != null && ordre.getAssignedTo().equals(userId))) {
+        boolean isChefWithDept = (role.equals("CHEFOP") || role.equals("CHEFTECH")) && department != null && ordre.getDepartment() != null && ordre.getDepartment().name().equals(department);
+        if (role.equals("ADMIN") || isChefWithDept || (role.equals("TECHNICIEN") && userId != null && ordre.getAssignedTo() != null && ordre.getAssignedTo().equals(userId))) {
             ordre.setStatut(com.eam.common.enums.Statut.valueOf(statut));
             log.info("Work order id={} status updated to {} by userId={}, role={}, department={}", id, statut, userId, role, department);
             return ResponseEntity.ok(ordreTravailService.modifyOrdreTravail(ordre));
         } else {
-            log.warn("Access denied for updateStatusOrdreTravail id={} by userId={}, role={}, department={}", id, userId, role, department);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body((OrdreTravail) Map.of("error", "Access denied: insufficient permissions to update status."));
+            String msg = "Access denied: Only ADMIN, CHEF roles within their department, or assigned TECHNICIEN can update status.";
+            log.warn("{}", msg);
+            throw new AccessDeniedException(msg);
         }
     }
 
@@ -152,8 +169,9 @@ public class OrdreTravailRestController {
             log.info("Work order id={} deleted by userId={}, role={}, department={}", id, userId, role, department);
             return ResponseEntity.ok().build();
         } else {
-            log.warn("Access denied for deleteOrdreTravail id={} by userId={}, role={}, department={}", id, userId, role, department);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            String msg = "Access denied: Only ADMIN can delete work orders.";
+            log.warn("{}", msg);
+            throw new AccessDeniedException(msg);
         }
     }
 }

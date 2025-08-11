@@ -10,6 +10,7 @@ import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import com.eam.common.security.RoleAllowed;
+import org.springframework.security.access.AccessDeniedException;
 
 @RestController
 @RequestMapping("/api/planning")
@@ -32,14 +33,14 @@ public class PlanningRestController {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
         String role = token != null ? jwtUtil.getRoleFromToken(token) : null;
         String department = token != null ? jwtUtil.getDepartmentFromToken(token) : null;
-        if (role == null) return List.of();
+        if (role == null) throw new AccessDeniedException("Missing role in token.");
         if (role.equals("ADMIN")) {
             return planningService.retrieveAllPlannings();
         } else if (role.equals("CHEFOP") || role.equals("CHEFTECH") || role.equals("TECHNICIEN")) {
-            if (department == null) return List.of();
+            if (department == null) throw new AccessDeniedException("Department information missing from token.");
             return planningService.retrievePlanningsByDepartment(com.eam.common.enums.DepartmentType.valueOf(department));
         } else {
-            return List.of();
+            throw new AccessDeniedException("Access denied: role not allowed to list plannings.");
         }
     }
 
@@ -51,13 +52,13 @@ public class PlanningRestController {
         String department = token != null ? jwtUtil.getDepartmentFromToken(token) : null;
         Planning planning = planningService.retrievePlanning(id);
         if (planning == null) return ResponseEntity.notFound().build();
-        if (role == null) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (role == null) throw new AccessDeniedException("Missing role in token.");
         if (role.equals("ADMIN")) {
             return ResponseEntity.ok(planning);
         } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH") || role.equals("TECHNICIEN")) && department != null && planning.getDepartment() != null && planning.getDepartment().name().equals(department)) {
             return ResponseEntity.ok(planning);
         } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new AccessDeniedException("Access denied: Non-admins can only access plannings within their department.");
         }
     }
 
@@ -67,14 +68,14 @@ public class PlanningRestController {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
         String role = token != null ? jwtUtil.getRoleFromToken(token) : null;
         String department = token != null ? jwtUtil.getDepartmentFromToken(token) : null;
-        if (role == null) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (role == null) throw new AccessDeniedException("Missing role in token.");
         if (role.equals("ADMIN")) {
             return ResponseEntity.ok(planningService.addPlanning(planning));
         } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH")) && department != null) {
             planning.setDepartment(com.eam.common.enums.DepartmentType.valueOf(department));
             return ResponseEntity.ok(planningService.addPlanning(planning));
         } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new AccessDeniedException("Only ADMIN, CHEFOP, or CHEFTECH can add plannings. CHEF roles can only add to their own department.");
         }
     }
 
@@ -84,13 +85,13 @@ public class PlanningRestController {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
         String role = token != null ? jwtUtil.getRoleFromToken(token) : null;
         String department = token != null ? jwtUtil.getDepartmentFromToken(token) : null;
-        if (role == null) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (role == null) throw new AccessDeniedException("Missing role in token.");
         if (role.equals("ADMIN")) {
             return ResponseEntity.ok(planningService.modifyPlanning(planning));
         } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH")) && department != null && planning.getDepartment() != null && planning.getDepartment().name().equals(department)) {
             return ResponseEntity.ok(planningService.modifyPlanning(planning));
         } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new AccessDeniedException("Only ADMIN, CHEFOP, or CHEFTECH can update plannings. CHEF roles can only modify plannings in their own department.");
         }
     }
 
@@ -99,12 +100,12 @@ public class PlanningRestController {
     public ResponseEntity<Void> deletePlanning(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @PathVariable Long id) {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
         String role = token != null ? jwtUtil.getRoleFromToken(token) : null;
-        if (role == null) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (role == null) throw new AccessDeniedException("Missing role in token.");
         if (role.equals("ADMIN")) {
             planningService.removePlanning(id);
             return ResponseEntity.ok().build();
         } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            throw new AccessDeniedException("Access denied: Only ADMIN can delete plannings.");
         }
     }
 }

@@ -12,6 +12,7 @@ import java.util.List;
 import com.eam.user.security.JwtProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.eam.common.security.RoleAllowed;
+import org.springframework.security.access.AccessDeniedException;
 
 @RestController
 @RequestMapping("/api/user")
@@ -35,7 +36,7 @@ public class UserRestController {
         if (("CHEFOP".equals(role) || "CHEFTECH".equals(role)) && department != null) {
             return userService.retrieveUsersByDepartment(com.eam.common.enums.DepartmentType.valueOf(department));
         }
-        return List.of();
+        throw new AccessDeniedException("Only ADMIN can view all users. CHEF roles can only view users in their own department.");
     }
 
     @RoleAllowed({"ADMIN", "CHEFOP", "CHEFTECH", "TECHNICIEN"})
@@ -54,19 +55,49 @@ public class UserRestController {
         if ("TECHNICIEN".equals(role) && userId != null && dto.getId() != null && dto.getId().equals(userId)) {
             return ResponseEntity.ok(dto);
         }
-        return ResponseEntity.status(403).build();
+        throw new AccessDeniedException("Access denied: CHEF roles can only view users in their own department; TECHNICIEN can only view their own profile.");
     }
 
     @RoleAllowed({"ADMIN", "CHEFOP"})
     @PostMapping("/add-user")
-    public UserDto addUser(@Valid @RequestBody UserDto userDto) {
-        return userService.addUser(userDto);
+    public ResponseEntity<UserDto> addUser(@RequestHeader("Authorization") String authHeader, @Valid @RequestBody UserDto userDto) {
+        String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
+        String role = token != null ? jwtProvider.getRoleFromToken(token) : null;
+        String department = token != null ? jwtProvider.getDepartmentFromToken(token) : null;
+        if ("ADMIN".equals(role)) {
+            return ResponseEntity.ok(userService.addUser(userDto));
+        } else if ("CHEFOP".equals(role) && department != null) {
+            userDto.setDepartment(com.eam.common.enums.DepartmentType.valueOf(department));
+            return ResponseEntity.ok(userService.addUser(userDto));
+        } else {
+            throw new AccessDeniedException("Only ADMIN and CHEFOP can add users. CHEFOP can only add users to their own department.");
+        }
     }
 
     @RoleAllowed({"ADMIN", "CHEFOP"})
     @PutMapping("/update-user")
-    public UserDto updateUser(@Valid @RequestBody UserDto userDto) {
-        return userService.modifyUser(userDto);
+    public ResponseEntity<UserDto> updateUser(@RequestHeader("Authorization") String authHeader, @Valid @RequestBody UserDto userDto) {
+        String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
+        String role = token != null ? jwtProvider.getRoleFromToken(token) : null;
+        String department = token != null ? jwtProvider.getDepartmentFromToken(token) : null;
+        if (userDto.getId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        if ("ADMIN".equals(role)) {
+            return ResponseEntity.ok(userService.modifyUser(userDto));
+        } else if ("CHEFOP".equals(role) && department != null) {
+            UserDto existing = userService.retrieveUser(userDto.getId());
+            if (existing == null) {
+                return ResponseEntity.notFound().build();
+            }
+            if (existing.getDepartment() == null || !existing.getDepartment().name().equals(department)) {
+                throw new AccessDeniedException("CHEFOP can only update users within their own department.");
+            }
+            userDto.setDepartment(com.eam.common.enums.DepartmentType.valueOf(department));
+            return ResponseEntity.ok(userService.modifyUser(userDto));
+        } else {
+            throw new AccessDeniedException("Only ADMIN and CHEFOP can update users.");
+        }
     }
 
     @RoleAllowed({"ADMIN"})
