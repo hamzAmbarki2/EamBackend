@@ -98,7 +98,8 @@ public class OrdreTravailRestController {
         if (role.equals("ADMIN")) {
             return ResponseEntity.ok(ordreTravailService.modifyOrdreTravail(ordreTravail));
         } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH")) && department != null && existing.getDepartment() != null && existing.getDepartment().name().equals(department)) {
-            // enforce department scope on existing record
+            // enforce department scope on existing record and prevent department change
+            ordreTravail.setDepartment(existing.getDepartment());
             return ResponseEntity.ok(ordreTravailService.modifyOrdreTravail(ordreTravail));
         } else if (role.equals("TECHNICIEN") && userId != null && existing.getAssignedTo() != null && existing.getAssignedTo().equals(userId)) {
             // allow only if persisted assignment is to current user
