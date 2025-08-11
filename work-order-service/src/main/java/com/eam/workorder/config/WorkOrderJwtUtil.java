@@ -1,4 +1,4 @@
-package com.eam.common.web;
+package com.eam.workorder.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 
 @Component
-public class JwtUtil {
+public class WorkOrderJwtUtil {
     @Value("${jwt.secret:mySecretKey}")
     private String jwtSecret;
 
@@ -45,9 +45,5 @@ public class JwtUtil {
         if (id instanceof Long) return (Long) id;
         if (id instanceof String) return Long.valueOf((String) id);
         return null;
-    }
-
-    public String getJtiFromToken(String token) {
-        return getAllClaimsFromToken(token).getId();
     }
 }

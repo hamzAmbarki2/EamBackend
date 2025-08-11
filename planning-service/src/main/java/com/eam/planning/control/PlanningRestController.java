@@ -6,10 +6,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
-
 import java.util.List;
 import org.springframework.http.HttpHeaders;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import com.eam.common.security.RoleAllowed;
 
@@ -19,9 +17,8 @@ import com.eam.common.security.RoleAllowed;
 public class PlanningRestController {
 
     private final IPlanningService planningService;
-    
-    @Autowired
-    private com.eam.planning.config.JwtUtil jwtUtil;
+
+    private final com.eam.planning.config.JwtUtil jwtUtil;
 
     @RoleAllowed({"ADMIN", "CHEFOP", "CHEFTECH", "TECHNICIEN"})
     @GetMapping("/retrieve-all-plannings")

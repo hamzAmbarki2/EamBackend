@@ -7,7 +7,6 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@ComponentScan(basePackages = {"com.eam.asset", "com.eam.common"})
 public class AssetServiceApplication {
 
     public static void main(String[] args) {

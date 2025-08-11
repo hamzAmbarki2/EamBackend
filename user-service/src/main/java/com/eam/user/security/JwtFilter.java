@@ -32,7 +32,7 @@ public class JwtFilter extends OncePerRequestFilter {
             String jti = null;
             try {
                 jti = io.jsonwebtoken.Jwts.parserBuilder()
-                        .setSigningKey(jwtProvider.getClass()) // placeholder, not used directly
+                        .setSigningKey(String.valueOf(jwtProvider.getClass())) // placeholder, not used directly
                         .build()
                         .parseClaimsJws(token)
                         .getBody()

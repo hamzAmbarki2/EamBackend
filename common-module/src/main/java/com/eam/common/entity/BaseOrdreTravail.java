@@ -2,6 +2,7 @@ package com.eam.common.entity;
 
 import com.eam.common.enums.DepartmentType;
 import com.eam.common.enums.Priorite;
+import com.eam.common.enums.Statut;
 import com.eam.common.interfaces.IOrdreTravail;
 import java.util.Date;
 
@@ -41,5 +42,9 @@ public abstract class BaseOrdreTravail implements IOrdreTravail {
 
     // ID of the assigned technicien (nullable)
     private Long assignedTo;
+    @Setter
+    @Getter
+    private Statut statut;
+
 }
 

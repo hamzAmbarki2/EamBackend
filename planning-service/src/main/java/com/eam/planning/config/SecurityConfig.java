@@ -8,42 +8,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import javax.crypto.SecretKey;
-
-public class JwtUtil {
-    @Value("${jwt.secret:mySecretKey}")
-    private String jwtSecret;
-
-    private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
-
-    public Claims getAllClaimsFromToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
-    public String getEmailFromToken(String token) {
-        return getAllClaimsFromToken(token).getSubject();
-    }
-
-    public String getRoleFromToken(String token) {
-        return getAllClaimsFromToken(token).get("role", String.class);
-    }
-
-    public String getDepartmentFromToken(String token) {
-        return getAllClaimsFromToken(token).get("department", String.class);
-    }
-}
 
 @Configuration
 @EnableWebSecurity

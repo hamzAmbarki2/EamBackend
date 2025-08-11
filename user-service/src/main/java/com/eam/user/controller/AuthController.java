@@ -197,7 +197,7 @@ public class AuthController {
         String token = authHeader.substring(7);
         try {
             io.jsonwebtoken.Claims claims = io.jsonwebtoken.Jwts.parserBuilder()
-                    .setSigningKey((new com.eam.user.security.JwtProvider()).getClass()) // placeholder not used
+                    .setSigningKey(String.valueOf(com.eam.user.security.JwtProvider.class)) // placeholder not used
                     .build()
                     .parseClaimsJws(token)
                     .getBody();

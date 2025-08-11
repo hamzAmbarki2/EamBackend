@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import com.eam.common.enums.DepartmentType;
 
 @Service
 @AllArgsConstructor
@@ -22,6 +23,13 @@ public class UserServiceImpl implements IUserService {
     @Override
     public List<UserDto> retrieveAllUsers() {
         return userRepository.findAll().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserDto> retrieveUsersByDepartment(DepartmentType department) {
+        return userRepository.findByDepartment(department).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -69,6 +77,22 @@ public class UserServiceImpl implements IUserService {
     public UserDto getCurrentUserProfile(String email) {
         User user = userRepository.findByEmail(email).orElse(null);
         return user != null ? convertToDto(user) : null;
+    }
+
+    @Override
+    public UserDto updateOwnProfile(Long userId, UserDto partialUpdate) {
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (partialUpdate.getEmail() != null) existingUser.setEmail(partialUpdate.getEmail());
+        if (partialUpdate.getPhone() != null) existingUser.setPhone(partialUpdate.getPhone());
+        if (partialUpdate.getCIN() != null) existingUser.setCIN(partialUpdate.getCIN());
+        if (partialUpdate.getAvatar() != null) existingUser.setAvatar(partialUpdate.getAvatar());
+        if (partialUpdate.getPassword() != null && !partialUpdate.getPassword().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(partialUpdate.getPassword()));
+        }
+        // Do NOT allow role/department/status changes via self update
+        User saved = userRepository.save(existingUser);
+        return convertToDto(saved);
     }
 
     private UserDto convertToDto(User user) {

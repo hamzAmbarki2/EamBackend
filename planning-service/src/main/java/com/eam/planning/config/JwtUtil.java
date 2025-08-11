@@ -1,4 +1,4 @@
-package com.eam.workorder.config;
+package com.eam.planning.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -37,13 +37,5 @@ public class JwtUtil {
 
     public String getDepartmentFromToken(String token) {
         return getAllClaimsFromToken(token).get("department", String.class);
-    }
-
-    public Long getUserIdFromToken(String token) {
-        Object id = getAllClaimsFromToken(token).get("userId");
-        if (id instanceof Integer) return ((Integer) id).longValue();
-        if (id instanceof Long) return (Long) id;
-        if (id instanceof String) return Long.valueOf((String) id);
-        return null;
     }
 }

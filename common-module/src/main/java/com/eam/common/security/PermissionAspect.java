@@ -52,7 +52,7 @@ public class PermissionAspect {
 
     private String extractRoleFromRequest() {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        String authHeader = request.getHeader("Authorization");
+        String authHeader = ((jakarta.servlet.http.HttpServletRequest) request).getHeader("Authorization");
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
         return token != null ? jwtUtil.getRoleFromToken(token) : null;
     }

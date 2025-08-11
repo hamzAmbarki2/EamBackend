@@ -7,7 +7,6 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@ComponentScan(basePackages = {"com.eam.planning", "com.eam.common"})
 public class PlanningServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(PlanningServiceApplication.class, args);
