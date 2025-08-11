@@ -14,9 +14,13 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ControllerAdvice
 public class WorkOrderGlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(WorkOrderGlobalExceptionHandler.class);
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
@@ -59,14 +63,16 @@ public class WorkOrderGlobalExceptionHandler extends ResponseEntityExceptionHand
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDeniedException(Exception ex) {
+        log.warn("Access denied: {}", ex.getMessage());
         return new ResponseEntity<>(
-                Map.of("error", "Access denied: insufficient permissions."),
+                Map.of("error", ex.getMessage()),
                 HttpStatus.FORBIDDEN
         );
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGenericException(Exception ex) {
+        log.error("Internal server error", ex);
         return new ResponseEntity<>(
                 Map.of("error", "Internal server error.", "details", ex.getMessage()),
                 HttpStatus.INTERNAL_SERVER_ERROR

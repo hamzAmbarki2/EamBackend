@@ -12,6 +12,7 @@ import java.util.List;
 import com.eam.user.security.JwtProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.eam.common.security.RoleAllowed;
+import org.springframework.security.access.AccessDeniedException;
 
 @RestController
 @RequestMapping("/api/user")
@@ -35,7 +36,7 @@ public class UserRestController {
         if (("CHEFOP".equals(role) || "CHEFTECH".equals(role)) && department != null) {
             return userService.retrieveUsersByDepartment(com.eam.common.enums.DepartmentType.valueOf(department));
         }
-        return List.of();
+        throw new AccessDeniedException("Only ADMIN can view all users. CHEF roles can only view users in their own department.");
     }
 
     @RoleAllowed({"ADMIN", "CHEFOP", "CHEFTECH", "TECHNICIEN"})
@@ -54,7 +55,7 @@ public class UserRestController {
         if ("TECHNICIEN".equals(role) && userId != null && dto.getId() != null && dto.getId().equals(userId)) {
             return ResponseEntity.ok(dto);
         }
-        return ResponseEntity.status(403).build();
+        throw new AccessDeniedException("Access denied: CHEF roles can only view users in their own department; TECHNICIEN can only view their own profile.");
     }
 
     @RoleAllowed({"ADMIN", "CHEFOP"})
@@ -69,7 +70,7 @@ public class UserRestController {
             userDto.setDepartment(com.eam.common.enums.DepartmentType.valueOf(department));
             return ResponseEntity.ok(userService.addUser(userDto));
         } else {
-            return ResponseEntity.status(403).build();
+            throw new AccessDeniedException("Only ADMIN and CHEFOP can add users. CHEFOP can only add users to their own department.");
         }
     }
 
@@ -90,12 +91,12 @@ public class UserRestController {
                 return ResponseEntity.notFound().build();
             }
             if (existing.getDepartment() == null || !existing.getDepartment().name().equals(department)) {
-                return ResponseEntity.status(403).build();
+                throw new AccessDeniedException("CHEFOP can only update users within their own department.");
             }
             userDto.setDepartment(com.eam.common.enums.DepartmentType.valueOf(department));
             return ResponseEntity.ok(userService.modifyUser(userDto));
         } else {
-            return ResponseEntity.status(403).build();
+            throw new AccessDeniedException("Only ADMIN and CHEFOP can update users.");
         }
     }
 
