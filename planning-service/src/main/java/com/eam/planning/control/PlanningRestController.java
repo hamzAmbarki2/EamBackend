@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import com.eam.common.security.RoleAllowed;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 
 @RestController
 @RequestMapping("/api/planning")
@@ -33,11 +34,11 @@ public class PlanningRestController {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
         String role = token != null ? jwtUtil.getRoleFromToken(token) : null;
         String department = token != null ? jwtUtil.getDepartmentFromToken(token) : null;
-        if (role == null) throw new AccessDeniedException("Missing role in token.");
+        if (role == null) throw new AuthenticationCredentialsNotFoundException("Unauthorized: missing or invalid token.");
         if (role.equals("ADMIN")) {
             return planningService.retrieveAllPlannings();
         } else if (role.equals("CHEFOP") || role.equals("CHEFTECH") || role.equals("TECHNICIEN")) {
-            if (department == null) throw new AccessDeniedException("Department information missing from token.");
+            if (department == null) throw new AuthenticationCredentialsNotFoundException("Unauthorized: department information missing from token.");
             return planningService.retrievePlanningsByDepartment(com.eam.common.enums.DepartmentType.valueOf(department));
         } else {
             throw new AccessDeniedException("Access denied: role not allowed to list plannings.");
@@ -52,7 +53,7 @@ public class PlanningRestController {
         String department = token != null ? jwtUtil.getDepartmentFromToken(token) : null;
         Planning planning = planningService.retrievePlanning(id);
         if (planning == null) return ResponseEntity.notFound().build();
-        if (role == null) throw new AccessDeniedException("Missing role in token.");
+        if (role == null) throw new AuthenticationCredentialsNotFoundException("Unauthorized: missing or invalid token.");
         if (role.equals("ADMIN")) {
             return ResponseEntity.ok(planning);
         } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH") || role.equals("TECHNICIEN")) && department != null && planning.getDepartment() != null && planning.getDepartment().name().equals(department)) {
@@ -68,7 +69,7 @@ public class PlanningRestController {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
         String role = token != null ? jwtUtil.getRoleFromToken(token) : null;
         String department = token != null ? jwtUtil.getDepartmentFromToken(token) : null;
-        if (role == null) throw new AccessDeniedException("Missing role in token.");
+        if (role == null) throw new AuthenticationCredentialsNotFoundException("Unauthorized: missing or invalid token.");
         if (role.equals("ADMIN")) {
             return ResponseEntity.ok(planningService.addPlanning(planning));
         } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH")) && department != null) {
@@ -85,7 +86,7 @@ public class PlanningRestController {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
         String role = token != null ? jwtUtil.getRoleFromToken(token) : null;
         String department = token != null ? jwtUtil.getDepartmentFromToken(token) : null;
-        if (role == null) throw new AccessDeniedException("Missing role in token.");
+        if (role == null) throw new AuthenticationCredentialsNotFoundException("Unauthorized: missing or invalid token.");
         if (role.equals("ADMIN")) {
             return ResponseEntity.ok(planningService.modifyPlanning(planning));
         } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH")) && department != null && planning.getDepartment() != null && planning.getDepartment().name().equals(department)) {
@@ -100,7 +101,7 @@ public class PlanningRestController {
     public ResponseEntity<Void> deletePlanning(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @PathVariable Long id) {
         String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
         String role = token != null ? jwtUtil.getRoleFromToken(token) : null;
-        if (role == null) throw new AccessDeniedException("Missing role in token.");
+        if (role == null) throw new AuthenticationCredentialsNotFoundException("Unauthorized: missing or invalid token.");
         if (role.equals("ADMIN")) {
             planningService.removePlanning(id);
             return ResponseEntity.ok().build();

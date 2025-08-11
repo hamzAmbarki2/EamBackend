@@ -1,1 +1,3 @@
+com/eam/user/config/RestAuthenticationEntryPoint.class
+com/eam/user/config/RestAccessDeniedHandler.class
 com/eam/user/config/GlobalExceptionHandler.class

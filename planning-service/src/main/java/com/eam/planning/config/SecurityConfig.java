@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.AccessDeniedHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -31,10 +33,22 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .httpBasic(basic -> {
-                    // basic auth if needed
-                });
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(restAuthenticationEntryPoint())
+                        .accessDeniedHandler(restAccessDeniedHandler())
+                )
+                .httpBasic(AbstractHttpConfigurer::disable);
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint restAuthenticationEntryPoint() {
+        return new RestAuthenticationEntryPoint();
+    }
+
+    @Bean
+    public AccessDeniedHandler restAccessDeniedHandler() {
+        return new RestAccessDeniedHandler();
     }
 }

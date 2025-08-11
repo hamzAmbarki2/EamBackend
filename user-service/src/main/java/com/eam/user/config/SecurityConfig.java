@@ -13,6 +13,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.AccessDeniedHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -46,8 +48,24 @@ public class SecurityConfig {
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(restAuthenticationEntryPoint())
+                        .accessDeniedHandler(restAccessDeniedHandler())
+                )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable);
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint restAuthenticationEntryPoint() {
+        return new RestAuthenticationEntryPoint();
+    }
+
+    @Bean
+    public AccessDeniedHandler restAccessDeniedHandler() {
+        return new RestAccessDeniedHandler();
     }
 }
 

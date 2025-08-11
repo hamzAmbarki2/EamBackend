@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -34,12 +35,18 @@ public class PermissionAspect {
         }
         String[] allowedRoles = roleAllowed != null ? roleAllowed.value() : new String[]{};
         String role = extractRoleFromRequest();
-        if (role == null || Arrays.stream(allowedRoles).noneMatch(r -> r.equals(role))) {
+        if (role == null) {
+            String methodName = method.getDeclaringClass().getSimpleName() + "." + method.getName();
+            String message = "Unauthorized: missing or invalid token for " + methodName;
+            log.warn("{}", message);
+            throw new AuthenticationCredentialsNotFoundException(message);
+        }
+        if (Arrays.stream(allowedRoles).noneMatch(r -> r.equals(role))) {
             String methodName = method.getDeclaringClass().getSimpleName() + "." + method.getName();
             String allowed = String.join(", ", allowedRoles);
-            String message = "Forbidden: " + methodName + " requires roles [" + allowed + "] but current role is " + (role == null ? "null" : role);
+            String message = "Forbidden: " + methodName + " requires roles [" + allowed + "] but current role is " + role;
             log.warn("{}", message);
-            throw new AccessDeniedException(message);
+            throw new org.springframework.security.access.AccessDeniedException(message);
         }
         return joinPoint.proceed();
     }
