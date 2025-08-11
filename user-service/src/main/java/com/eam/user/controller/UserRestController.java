@@ -59,14 +59,44 @@ public class UserRestController {
 
     @RoleAllowed({"ADMIN", "CHEFOP"})
     @PostMapping("/add-user")
-    public UserDto addUser(@Valid @RequestBody UserDto userDto) {
-        return userService.addUser(userDto);
+    public ResponseEntity<UserDto> addUser(@RequestHeader("Authorization") String authHeader, @Valid @RequestBody UserDto userDto) {
+        String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
+        String role = token != null ? jwtProvider.getRoleFromToken(token) : null;
+        String department = token != null ? jwtProvider.getDepartmentFromToken(token) : null;
+        if ("ADMIN".equals(role)) {
+            return ResponseEntity.ok(userService.addUser(userDto));
+        } else if ("CHEFOP".equals(role) && department != null) {
+            userDto.setDepartment(com.eam.common.enums.DepartmentType.valueOf(department));
+            return ResponseEntity.ok(userService.addUser(userDto));
+        } else {
+            return ResponseEntity.status(403).build();
+        }
     }
 
     @RoleAllowed({"ADMIN", "CHEFOP"})
     @PutMapping("/update-user")
-    public UserDto updateUser(@Valid @RequestBody UserDto userDto) {
-        return userService.modifyUser(userDto);
+    public ResponseEntity<UserDto> updateUser(@RequestHeader("Authorization") String authHeader, @Valid @RequestBody UserDto userDto) {
+        String token = authHeader != null && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
+        String role = token != null ? jwtProvider.getRoleFromToken(token) : null;
+        String department = token != null ? jwtProvider.getDepartmentFromToken(token) : null;
+        if (userDto.getId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        if ("ADMIN".equals(role)) {
+            return ResponseEntity.ok(userService.modifyUser(userDto));
+        } else if ("CHEFOP".equals(role) && department != null) {
+            UserDto existing = userService.retrieveUser(userDto.getId());
+            if (existing == null) {
+                return ResponseEntity.notFound().build();
+            }
+            if (existing.getDepartment() == null || !existing.getDepartment().name().equals(department)) {
+                return ResponseEntity.status(403).build();
+            }
+            userDto.setDepartment(com.eam.common.enums.DepartmentType.valueOf(department));
+            return ResponseEntity.ok(userService.modifyUser(userDto));
+        } else {
+            return ResponseEntity.status(403).build();
+        }
     }
 
     @RoleAllowed({"ADMIN"})

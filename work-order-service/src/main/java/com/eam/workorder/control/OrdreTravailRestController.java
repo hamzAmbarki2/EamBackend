@@ -90,11 +90,18 @@ public class OrdreTravailRestController {
         String role = token != null ? workOrderJwtUtil.getRoleFromToken(token) : null;
         String department = token != null ? workOrderJwtUtil.getDepartmentFromToken(token) : null;
         Long userId = token != null ? workOrderJwtUtil.getUserIdFromToken(token) : null;
+        if (ordreTravail.getId() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        OrdreTravail existing = ordreTravailService.retrieveOrdreTravail(ordreTravail.getId());
+        if (existing == null) return ResponseEntity.notFound().build();
         if (role.equals("ADMIN")) {
             return ResponseEntity.ok(ordreTravailService.modifyOrdreTravail(ordreTravail));
-        } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH")) && department != null && ordreTravail.getDepartment() != null && ordreTravail.getDepartment().name().equals(department)) {
+        } else if ((role.equals("CHEFOP") || role.equals("CHEFTECH")) && department != null && existing.getDepartment() != null && existing.getDepartment().name().equals(department)) {
+            // enforce department scope on existing record
             return ResponseEntity.ok(ordreTravailService.modifyOrdreTravail(ordreTravail));
-        } else if (role.equals("TECHNICIEN") && userId != null && ordreTravail.getAssignedTo() != null && ordreTravail.getAssignedTo().equals(userId)) {
+        } else if (role.equals("TECHNICIEN") && userId != null && existing.getAssignedTo() != null && existing.getAssignedTo().equals(userId)) {
+            // allow only if persisted assignment is to current user
             return ResponseEntity.ok(ordreTravailService.modifyOrdreTravail(ordreTravail));
         } else {
             log.warn("Access denied for updateOrdreTravail id={} by userId={}, role={}, department={}", ordreTravail.getId(), userId, role, department);
@@ -130,7 +137,8 @@ public class OrdreTravailRestController {
         Long userId = token != null ? workOrderJwtUtil.getUserIdFromToken(token) : null;
         OrdreTravail ordre = ordreTravailService.retrieveOrdreTravail(id);
         if (ordre == null) return ResponseEntity.notFound().build();
-        if (role.equals("ADMIN") || role.equals("CHEFOP") || role.equals("CHEFTECH") || (role.equals("TECHNICIEN") && userId != null && ordre.getAssignedTo() != null && ordre.getAssignedTo().equals(userId))) {
+        boolean isChefWithDept = (role.equals("CHEFOP") || role.equals("CHEFTECH")) && department != null && ordre.getDepartment() != null && ordre.getDepartment().name().equals(department);
+        if (role.equals("ADMIN") || isChefWithDept || (role.equals("TECHNICIEN") && userId != null && ordre.getAssignedTo() != null && ordre.getAssignedTo().equals(userId))) {
             ordre.setStatut(com.eam.common.enums.Statut.valueOf(statut));
             log.info("Work order id={} status updated to {} by userId={}, role={}, department={}", id, statut, userId, role, department);
             return ResponseEntity.ok(ordreTravailService.modifyOrdreTravail(ordre));
