@@ -1,6 +1,10 @@
 /workspace/intervention-service/src/main/java/com/eam/intervention/repository/OrdreInterventionRepository.java
+/workspace/intervention-service/src/main/java/com/eam/intervention/config/RestAuthenticationEntryPoint.java
 /workspace/intervention-service/src/main/java/com/eam/intervention/entity/OrdreIntervention.java
+/workspace/intervention-service/src/main/java/com/eam/intervention/config/SecurityConfig.java
 /workspace/intervention-service/src/main/java/com/eam/intervention/service/IOrdreInterventionService.java
 /workspace/intervention-service/src/main/java/com/eam/intervention/InterventionServiceApplication.java
 /workspace/intervention-service/src/main/java/com/eam/intervention/service/OrdreInterventionServiceImpl.java
+/workspace/intervention-service/src/main/java/com/eam/intervention/config/RestAccessDeniedHandler.java
+/workspace/intervention-service/src/main/java/com/eam/intervention/config/GlobalExceptionHandler.java
 /workspace/intervention-service/src/main/java/com/eam/intervention/control/OrdreInterventionRestController.java

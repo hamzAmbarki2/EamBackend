@@ -1,4 +1,7 @@
+/workspace/work-order-service/src/main/java/com/eam/workorder/config/RestAccessDeniedHandler.java
+/workspace/work-order-service/src/main/java/com/eam/workorder/config/SecurityConfig.java
 /workspace/work-order-service/src/main/java/com/eam/workorder/control/OrdreTravailRestController.java
+/workspace/work-order-service/src/main/java/com/eam/workorder/config/RestAuthenticationEntryPoint.java
 /workspace/work-order-service/src/main/java/com/eam/workorder/config/WorkOrderJwtUtil.java
 /workspace/work-order-service/src/main/java/com/eam/workorder/service/IOrdreTravailService.java
 /workspace/work-order-service/src/main/java/com/eam/workorder/repository/OrdreTravailRepository.java

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 
 @ControllerAdvice
 public class WorkOrderGlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -67,6 +68,15 @@ public class WorkOrderGlobalExceptionHandler extends ResponseEntityExceptionHand
         return new ResponseEntity<>(
                 Map.of("error", ex.getMessage()),
                 HttpStatus.FORBIDDEN
+        );
+    }
+
+    @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
+    public ResponseEntity<Object> handleAuthMissing(AuthenticationCredentialsNotFoundException ex) {
+        log.warn("Unauthorized: {}", ex.getMessage());
+        return new ResponseEntity<>(
+                Map.of("error", ex.getMessage()),
+                HttpStatus.UNAUTHORIZED
         );
     }
 
