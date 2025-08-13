@@ -1,0 +1,11 @@
+# Put these in your application.yml and set via env vars in prod
+odoo:
+  url: https://your-odoo.example.com
+  db: your_db
+  username: api_user@example.com
+  password: changeme
+
+# Optional timeouts (ms)
+odooClient:
+  connectTimeout: 8000
+  readTimeout: 20000

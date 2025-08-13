@@ -1,0 +1,63 @@
+{
+  "info": {
+    "name": "Odoo Integration Starter",
+    "_postman_id": "odoo-starter",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "List Assets",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/integrations/odoo/assets?limit=20"
+      }
+    },
+    {
+      "name": "Create Asset",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"MacBook Pro\", \"value\": 2400, \"acquisitionDate\": \"2024-01-10\"}"
+        },
+        "url": "{{baseUrl}}/api/integrations/odoo/assets"
+      }
+    },
+    {
+      "name": "List Maintenance Requests",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/integrations/odoo/maintenance/requests?limit=20"
+      }
+    },
+    {
+      "name": "Create Maintenance Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\": \"Battery replacement\", \"equipmentId\": 12, \"description\": \"Not holding charge\"}"
+        },
+        "url": "{{baseUrl}}/api/integrations/odoo/maintenance/requests"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ]
+}
