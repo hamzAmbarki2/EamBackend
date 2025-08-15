@@ -5,5 +5,6 @@ com/eam/odoo/OdooMaintenanceService.class
 com/eam/odoo/OdooIntegrationServiceApplication.class
 com/eam/odoo/dto/MaintenanceRequestDTO.class
 com/eam/odoo/OdooClientConfig.class
+com/eam/odoo/OdooGlobalExceptionHandler.class
 com/eam/odoo/OdooAssetService.class
 com/eam/odoo/OdooAuthService.class

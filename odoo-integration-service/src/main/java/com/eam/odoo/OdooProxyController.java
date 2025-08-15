@@ -14,10 +14,12 @@ public class OdooProxyController {
 
     private final OdooAssetService assetService;
     private final OdooMaintenanceService maintenanceService;
+    private final OdooAuthService authService;
 
-    public OdooProxyController(OdooAssetService assetService, OdooMaintenanceService maintenanceService) {
+    public OdooProxyController(OdooAssetService assetService, OdooMaintenanceService maintenanceService, OdooAuthService authService) {
         this.assetService = assetService;
         this.maintenanceService = maintenanceService;
+        this.authService = authService;
     }
 
     @GetMapping("/assets")
@@ -46,5 +48,15 @@ public class OdooProxyController {
         String desc = (String) body.get("description");
         Integer id = maintenanceService.createRequest(title, eq == null ? null : eq.intValue(), desc);
         return Map.of("id", id);
+    }
+
+    @GetMapping("/ping")
+    public ResponseEntity<?> ping() {
+        try {
+            int uid = authService.authenticate();
+            return ResponseEntity.ok(Map.of("odoo", "ok", "uid", uid));
+        } catch (Exception ex) {
+            return ResponseEntity.status(503).body(Map.of("odoo", "error", "message", ex.getMessage()));
+        }
     }
 }

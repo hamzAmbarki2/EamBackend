@@ -1,6 +1,7 @@
 /workspace/odoo-integration-service/src/main/java/com/eam/odoo/OdooIntegrationServiceApplication.java
 /workspace/odoo-integration-service/src/main/java/com/eam/odoo/dto/MaintenanceRequestDTO.java
 /workspace/odoo-integration-service/src/main/java/com/eam/odoo/OdooMaintenanceService.java
+/workspace/odoo-integration-service/src/main/java/com/eam/odoo/OdooGlobalExceptionHandler.java
 /workspace/odoo-integration-service/src/main/java/com/eam/odoo/OdooAssetService.java
 /workspace/odoo-integration-service/src/main/java/com/eam/odoo/dto/AssetDTO.java
 /workspace/odoo-integration-service/src/main/java/com/eam/odoo/OdooAuthService.java
