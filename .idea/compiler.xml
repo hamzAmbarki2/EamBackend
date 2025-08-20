@@ -8,16 +8,18 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="intervention-service" />
+        <module name="common-module" />
+        <module name="user-service" />
+        <module name="eureka-server" />
+        <module name="document-service" />
         <module name="work-order-service" />
         <module name="planning" />
         <module name="work-order-service (4)" />
-        <module name="common-module" />
         <module name="api-gateway" />
         <module name="asset-service" />
-        <module name="user-service" />
         <module name="work-order-service (3)" />
-        <module name="eureka-server" />
         <module name="work-order-service (2)" />
+        <module name="odoo-integration-service" />
         <module name="work-order-service (1)" />
       </profile>
     </annotationProcessing>
@@ -31,10 +33,12 @@
       <module name="api-gateway" options="-parameters" />
       <module name="asset-service" options="-parameters" />
       <module name="common-module" options="-parameters" />
+      <module name="document-service" options="-parameters" />
       <module name="eam-common-models" options="-parameters" />
       <module name="eureka-server" options="-parameters" />
       <module name="intervention-service" options="-parameters" />
       <module name="maintenance" options="-parameters" />
+      <module name="odoo-integration-service" options="-parameters" />
       <module name="planning" options="-parameters" />
       <module name="user-service" options="-parameters" />
       <module name="work-order-service" options="-parameters" />
