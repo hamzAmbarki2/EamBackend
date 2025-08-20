@@ -33,7 +33,7 @@ public class ApiGatewayApplication {
 						.uri("lb://intervention-service"))
 				.route("planning-service", r -> r.path("/api/planning/**")
 						.uri("lb://planning-service"))
-				.route("document-service", r -> r.path("/api/archives/**", "/api/rapports/**")
+				.route("document-service", r -> r.path("/api/archives/**", "/api/rapports/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
 						.uri("lb://document-service"))
 				.route("activity-log-service", r -> r.path("/api/activities/**")
 						.uri("lb://activity-log-service"))
