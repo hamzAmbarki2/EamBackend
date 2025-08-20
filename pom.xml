@@ -21,6 +21,7 @@
 		<module>work-order-service</module>
 		<module>user-service</module>
 		<module>odoo-integration-service</module>
+		<module>document-service</module>
 	</modules>
 
 	<properties>
