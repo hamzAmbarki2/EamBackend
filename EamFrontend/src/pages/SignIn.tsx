@@ -20,10 +20,16 @@ function SignIn() {
 				localStorage.setItem('token', token)
 				navigate('/welcome', { replace: true })
 			} else {
-				setError('Unexpected response from server')
+				setError('Unexpected response from server: no token field')
 			}
 		} catch (err: any) {
-			const message = err?.response?.data?.error || 'Login failed'
+			const status = err?.response?.status
+			const data = err?.response?.data
+			const action = data?.action
+			const backendMsg = data?.error || data?.message
+			let message = backendMsg || 'Login failed'
+			if (status) message += ` (HTTP ${status})`
+			if (action === 'verify_email') message += ' - please verify your email first.'
 			setError(message)
 		} finally {
 			setLoading(false)
@@ -58,6 +64,9 @@ function SignIn() {
 			<p style={{ marginTop: 12 }}>
 				No account? <Link to="/signup">Sign Up</Link>
 			</p>
+			<div style={{ marginTop: 12, fontSize: 12, color: '#555' }}>
+				<p>Debug tip: Check browser console for [api:req] and [api:err] logs.</p>
+			</div>
 		</div>
 	)
 }
