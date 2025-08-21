@@ -2,16 +2,31 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import api from '../api/client'
 
+function isValidEmail(value: string) {
+	return /.+@.+\..+/.test(value)
+}
+
 function SignIn() {
 	const navigate = useNavigate()
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 	const [error, setError] = useState<string | null>(null)
+	const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
 	const [loading, setLoading] = useState(false)
+
+	function validate() {
+		const next: { email?: string; password?: string } = {}
+		if (!email) next.email = 'Email is required'
+		else if (!isValidEmail(email)) next.email = 'Enter a valid email address'
+		if (!password) next.password = 'Password is required'
+		setFieldErrors(next)
+		return Object.keys(next).length === 0
+	}
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault()
 		setError(null)
+		if (!validate()) return
 		setLoading(true)
 		try {
 			const res = await api.post('/auth/login', { email, password })
@@ -30,6 +45,7 @@ function SignIn() {
 			let message = backendMsg || 'Login failed'
 			if (status) message += ` (HTTP ${status})`
 			if (action === 'verify_email') message += ' - please verify your email first.'
+			if (!err?.response) message = 'No response from server. Is the API gateway running at http://localhost:8080?'
 			setError(message)
 		} finally {
 			setLoading(false)
@@ -39,33 +55,37 @@ function SignIn() {
 	return (
 		<div style={{ maxWidth: 360, margin: '64px auto', fontFamily: 'sans-serif' }}>
 			<h2>Sign In</h2>
-			<form onSubmit={handleSubmit}>
+			<form onSubmit={handleSubmit} noValidate>
 				<label>Email</label>
 				<input
 					type="email"
 					value={email}
 					onChange={(e) => setEmail(e.target.value)}
 					required
-					style={{ width: '100%', padding: 8, marginBottom: 12 }}
+					style={{ width: '100%', padding: 8, marginBottom: 4 }}
 				/>
+				{fieldErrors.email && <div style={{ color: 'crimson', marginBottom: 8 }}>{fieldErrors.email}</div>}
+
 				<label>Password</label>
 				<input
 					type="password"
 					value={password}
 					onChange={(e) => setPassword(e.target.value)}
 					required
-					style={{ width: '100%', padding: 8, marginBottom: 12 }}
+					style={{ width: '100%', padding: 8, marginBottom: 4 }}
 				/>
-				<button type="submit" disabled={loading} style={{ width: '100%', padding: 10 }}>
+				{fieldErrors.password && <div style={{ color: 'crimson', marginBottom: 8 }}>{fieldErrors.password}</div>}
+
+				<button type="submit" disabled={loading} style={{ width: '100%', padding: 10, marginTop: 8 }}>
 					{loading ? 'Signing in...' : 'Sign In'}
 				</button>
 			</form>
-			{error && <p style={{ color: 'red', marginTop: 12 }}>{error}</p>}
+			{error && <p style={{ color: 'crimson', marginTop: 12 }}>{error}</p>}
 			<p style={{ marginTop: 12 }}>
 				No account? <Link to="/signup">Sign Up</Link>
 			</p>
 			<div style={{ marginTop: 12, fontSize: 12, color: '#555' }}>
-				<p>Debug tip: Check browser console for [api:req] and [api:err] logs.</p>
+				<p>Tip: If you see no backend activity, try setting VITE_API_BASE_URL in .env</p>
 			</div>
 		</div>
 	)

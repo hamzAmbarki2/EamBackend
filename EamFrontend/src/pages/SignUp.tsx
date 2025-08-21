@@ -8,6 +8,10 @@ const DEPARTMENTS = ['PRODUCTION', 'MAINTENANCE', 'QUALITÉ', 'LOGISTIQUE'] as c
 type Role = typeof ROLES[number]
 type Department = typeof DEPARTMENTS[number]
 
+function isValidEmail(value: string) {
+	return /.+@.+\..+/.test(value)
+}
+
 function SignUp() {
 	const navigate = useNavigate()
 	const [email, setEmail] = useState('')
@@ -18,13 +22,25 @@ function SignUp() {
 	const [department, setDepartment] = useState<Department | ''>('')
 	const [avatar, setAvatar] = useState('')
 	const [error, setError] = useState<string | null>(null)
+	const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
 	const [info, setInfo] = useState<string | null>(null)
 	const [loading, setLoading] = useState(false)
+
+	function validate() {
+		const next: { email?: string; password?: string } = {}
+		if (!email) next.email = 'Email is required'
+		else if (!isValidEmail(email)) next.email = 'Enter a valid email address'
+		if (!password) next.password = 'Password is required'
+		else if (password.length < 6) next.password = 'Password must be at least 6 characters'
+		setFieldErrors(next)
+		return Object.keys(next).length === 0
+	}
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault()
 		setError(null)
 		setInfo(null)
+		if (!validate()) return
 		setLoading(true)
 		try {
 			const payload = {
@@ -40,8 +56,12 @@ function SignUp() {
 			setInfo('Registration successful. Please check your email to verify your account.')
 			setTimeout(() => navigate('/signin', { replace: true }), 1400)
 		} catch (err: any) {
-			const detailed = err?.response?.data
-			const message = detailed?.error || detailed?.message || `Registration failed (HTTP ${err?.response?.status ?? 'n/a'})`
+			const status = err?.response?.status
+			const data = err?.response?.data
+			const backendMsg = data?.error || data?.message
+			let message = backendMsg || 'Registration failed'
+			if (status) message += ` (HTTP ${status})`
+			if (!err?.response) message = 'No response from server. Is the API gateway running at http://localhost:8080?'
 			setError(message)
 		} finally {
 			setLoading(false)
@@ -51,12 +71,14 @@ function SignUp() {
 	return (
 		<div style={{ maxWidth: 420, margin: '48px auto', fontFamily: 'sans-serif' }}>
 			<h2>Sign Up</h2>
-			<form onSubmit={handleSubmit}>
+			<form onSubmit={handleSubmit} noValidate>
 				<label>Email</label>
-				<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: '100%', padding: 8, marginBottom: 12 }} />
+				<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ width: '100%', padding: 8, marginBottom: 4 }} />
+				{fieldErrors.email && <div style={{ color: 'crimson', marginBottom: 8 }}>{fieldErrors.email}</div>}
 
 				<label>Password</label>
-				<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: '100%', padding: 8, marginBottom: 12 }} />
+				<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: '100%', padding: 8, marginBottom: 4 }} />
+				{fieldErrors.password && <div style={{ color: 'crimson', marginBottom: 8 }}>{fieldErrors.password}</div>}
 
 				<label>CIN</label>
 				<input value={cin} onChange={(e) => setCin(e.target.value)} placeholder="Optional" style={{ width: '100%', padding: 8, marginBottom: 12 }} />
@@ -86,11 +108,14 @@ function SignUp() {
 					{loading ? 'Signing up...' : 'Sign Up'}
 				</button>
 			</form>
-			{error && <p style={{ color: 'red', marginTop: 12 }}>{error}</p>}
+			{error && <p style={{ color: 'crimson', marginTop: 12 }}>{error}</p>}
 			{info && <p style={{ color: 'green', marginTop: 12 }}>{info}</p>}
 			<p style={{ marginTop: 12 }}>
 				Already have an account? <Link to="/signin">Sign In</Link>
 			</p>
+			<div style={{ marginTop: 12, fontSize: 12, color: '#555' }}>
+				<p>Tip: If you see no backend activity, try setting VITE_API_BASE_URL in .env</p>
+			</div>
 		</div>
 	)
 }
