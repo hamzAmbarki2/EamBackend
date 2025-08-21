@@ -80,10 +80,15 @@ function SignIn() {
 					{loading ? 'Signing in...' : 'Sign In'}
 				</button>
 			</form>
+			<div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
+				<p>
+					No account? <Link to="/signup">Sign Up</Link>
+				</p>
+				<p>
+					<Link to="/forgot-password">Forgot password?</Link>
+				</p>
+			</div>
 			{error && <p style={{ color: 'crimson', marginTop: 12 }}>{error}</p>}
-			<p style={{ marginTop: 12 }}>
-				No account? <Link to="/signup">Sign Up</Link>
-			</p>
 			<div style={{ marginTop: 12, fontSize: 12, color: '#555' }}>
 				<p>Tip: If you see no backend activity, try setting VITE_API_BASE_URL in .env</p>
 			</div>
