@@ -52,7 +52,11 @@ public class ApiGatewayApplication {
 	public CorsWebFilter corsWebFilter() {
 		CorsConfiguration corsConfig = new CorsConfiguration();
 		corsConfig.setAllowCredentials(true);
-		corsConfig.setAllowedOriginPatterns(Arrays.asList("http://localhost:8080"));
+		corsConfig.setAllowedOriginPatterns(Arrays.asList(
+				"http://localhost:5173",
+				"http://127.0.0.1:5173",
+				"http://localhost:8080"
+		));
 		corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
 		corsConfig.setAllowedHeaders(Arrays.asList("*"));
 		corsConfig.setExposedHeaders(Arrays.asList("Authorization"));
