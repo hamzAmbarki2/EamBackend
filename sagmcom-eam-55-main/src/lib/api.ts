@@ -71,6 +71,11 @@ async function request<T>(
 }
 
 export const api = {
+	auth: {
+		login: (email: string, password: string) => retryWithBackoff(() => request<{ token: string }>("/api/auth/login", { method: "POST", body: { email, password } })),
+		register: (payload: any) => retryWithBackoff(() => request<any>("/api/auth/register", { method: "POST", body: payload })),
+		profile: () => retryWithBackoff(() => request<any>("/api/user/profile")),
+	},
 	assets: {
 		list: () => retryWithBackoff(() => request<any[]>("/api/machine/retrieve-all-machines")),
 		get: (id: number) => retryWithBackoff(() => request<any>(`/api/machine/retrieve-machine/${id}`)),

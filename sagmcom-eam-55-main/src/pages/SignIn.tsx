@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Building2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -11,20 +12,33 @@ const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      if (!email || !password) {
+        throw new Error("Veuillez saisir l'email et le mot de passe.");
+      }
+      const res = await api.auth.login(email, password);
+      const token = (res as any)?.token;
+      if (!token) throw new Error("Jeton manquant dans la réponse.");
+      localStorage.setItem("token", token);
+      // fetch profile and redirect by role
+      const profile = await api.auth.profile();
+      const role = (profile?.role || "TECHNICIEN").toString().toUpperCase();
+      localStorage.setItem("role", role);
+      toast({ title: "Connexion réussie", description: `Bienvenue ${profile?.email || ""}` });
+      if (role === "ADMIN") navigate("/admin");
+      else if (role === "CHEFOP") navigate("/chef-operateur");
+      else if (role === "CHEFTECH") navigate("/chef-technicien");
+      else navigate("/technicien");
+    } catch (err: any) {
+      toast({ title: "Échec de la connexion", description: err?.message || "Identifiants invalides", variant: "destructive" });
+    } finally {
       setIsLoading(false);
-      toast({
-        title: "Sign In Successful",
-        description: "Welcome back to Sagemcom EAM Platform!",
-      });
-      // In a real app, redirect to dashboard
-    }, 1500);
+    }
   };
 
   return (
@@ -48,7 +62,7 @@ const SignIn = () => {
                 <p className="text-xs text-muted-foreground">EAM Platform</p>
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-white">
+            <CardTitle className="text-2xl font-bold text.white">
               Welcome Back
             </CardTitle>
             <p className="text-white/70">
@@ -86,7 +100,7 @@ const SignIn = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="w-full px-4 py-3 pr-12 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-primary focus:bg-white/15 transition-all"
+                    className="w-full px-4 py-3 pr-12 rounded-xl bg.white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-primary focus:bg-white/15 transition-all"
                     required
                   />
                   <button

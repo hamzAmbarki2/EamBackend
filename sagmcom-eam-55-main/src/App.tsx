@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import ChefOperateur from "./pages/ChefOperateur";
 import ChefTechnicien from "./pages/ChefTechnicien";
 import Technicien from "./pages/Technicien";
+import { RequireAuth } from "@/components/RequireAuth";
 
 const queryClient = new QueryClient();
 
@@ -33,19 +34,27 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/users" element={<Users />} />
-          <Route path="/admin/assets" element={<Assets />} />
-          <Route path="/admin/work-orders" element={<WorkOrders />} />
-          <Route path="/admin/interventions" element={<Interventions />} />
-          <Route path="/admin/plannings" element={<Plannings />} />
-          <Route path="/admin/rapports" element={<Rapports />} />
-          <Route path="/admin/archive" element={<Archive />} />
-          <Route path="/admin/activity" element={<Activity />} />
-          <Route path="/admin/notifications" element={<Notifications />} />
-          <Route path="/chef-operateur" element={<ChefOperateur />} />
-          <Route path="/chef-technicien" element={<ChefTechnicien />} />
-          <Route path="/technicien" element={<Technicien />} />
+          <Route element={<RequireAuth allowed={["ADMIN"]} />}> 
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<Users />} />
+            <Route path="/admin/assets" element={<Assets />} />
+            <Route path="/admin/work-orders" element={<WorkOrders />} />
+            <Route path="/admin/interventions" element={<Interventions />} />
+            <Route path="/admin/plannings" element={<Plannings />} />
+            <Route path="/admin/rapports" element={<Rapports />} />
+            <Route path="/admin/archive" element={<Archive />} />
+            <Route path="/admin/activity" element={<Activity />} />
+            <Route path="/admin/notifications" element={<Notifications />} />
+          </Route>
+          <Route element={<RequireAuth allowed={["CHEFOP"]} />}> 
+            <Route path="/chef-operateur" element={<ChefOperateur />} />
+          </Route>
+          <Route element={<RequireAuth allowed={["CHEFTECH"]} />}> 
+            <Route path="/chef-technicien" element={<ChefTechnicien />} />
+          </Route>
+          <Route element={<RequireAuth allowed={["TECHNICIEN"]} />}> 
+            <Route path="/technicien" element={<Technicien />} />
+          </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
