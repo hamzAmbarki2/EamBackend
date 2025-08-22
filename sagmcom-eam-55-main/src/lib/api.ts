@@ -11,6 +11,32 @@ function getAuthHeaders(): Record<string, string> {
 	}
 }
 
+async function delay(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function retryWithBackoff<T>(fn: () => Promise<T>, retries = 3, baseDelayMs = 400): Promise<T> {
+	let attempt = 0;
+	let lastErr: any = null;
+	while (attempt <= retries) {
+		try {
+			return await fn();
+		} catch (err: any) {
+			lastErr = err;
+			// Only retry on network errors or 5xx
+			const msg = String(err?.message || "");
+			const isAbort = msg.includes("AbortError");
+			const is5xx = /\s5\d\d\b/.test(msg);
+			const isNetwork = msg.toLowerCase().includes("failed to fetch") || msg.toLowerCase().includes("network");
+			if (attempt === retries || isAbort || (!is5xx && !isNetwork)) break;
+			const wait = Math.min(baseDelayMs * Math.pow(2, attempt), 4000);
+			await delay(wait);
+			attempt++;
+		}
+	}
+	throw lastErr;
+}
+
 async function request<T>(
 	path: string,
 	options: { method?: HttpMethod; body?: any; headers?: Record<string, string>; timeoutMs?: number } = {}
@@ -46,31 +72,31 @@ async function request<T>(
 
 export const api = {
 	assets: {
-		list: () => request<any[]>("/api/machine/retrieve-all-machines"),
-		get: (id: number) => request<any>(`/api/machine/retrieve-machine/${id}`),
-		create: (data: any) => request<any>("/api/machine/add-machine", { method: "POST", body: data }),
-		update: (data: any) => request<any>("/api/machine/update-machine", { method: "PUT", body: data }),
-		remove: (id: number) => request<void>(`/api/machine/delete-machine/${id}`, { method: "DELETE" }),
+		list: () => retryWithBackoff(() => request<any[]>("/api/machine/retrieve-all-machines")),
+		get: (id: number) => retryWithBackoff(() => request<any>(`/api/machine/retrieve-machine/${id}`)),
+		create: (data: any) => retryWithBackoff(() => request<any>("/api/machine/add-machine", { method: "POST", body: data })),
+		update: (data: any) => retryWithBackoff(() => request<any>("/api/machine/update-machine", { method: "PUT", body: data })),
+		remove: (id: number) => retryWithBackoff(() => request<void>(`/api/machine/delete-machine/${id}`, { method: "DELETE" })),
 	},
 	users: {
-		list: () => request<any[]>("/api/user/retrieve-all-users"),
-		get: (id: number) => request<any>(`/api/user/retrieve-user/${id}`),
-		create: (data: any) => request<any>("/api/user/add-user", { method: "POST", body: data }),
-		update: (data: any) => request<any>("/api/user/update-user", { method: "PUT", body: data }),
-		remove: (id: number) => request<void>(`/api/user/delete-user/${id}`, { method: "DELETE" }),
+		list: () => retryWithBackoff(() => request<any[]>("/api/user/retrieve-all-users")),
+		get: (id: number) => retryWithBackoff(() => request<any>(`/api/user/retrieve-user/${id}`)),
+		create: (data: any) => retryWithBackoff(() => request<any>("/api/user/add-user", { method: "POST", body: data })),
+		update: (data: any) => retryWithBackoff(() => request<any>("/api/user/update-user", { method: "PUT", body: data })),
+		remove: (id: number) => retryWithBackoff(() => request<void>(`/api/user/delete-user/${id}`, { method: "DELETE" })),
 	},
 	workOrders: {
-		list: () => request<any[]>("/api/ordreTravail/retrieve-all-ordreTravails"),
-		get: (id: number) => request<any>(`/api/ordreTravail/retrieve-ordreTravail/${id}`),
-		create: (data: any) => request<any>("/api/ordreTravail/add-ordreTravail", { method: "POST", body: data }),
-		update: (data: any) => request<any>("/api/ordreTravail/update-ordreTravail", { method: "PUT", body: data }),
-		remove: (id: number) => request<void>(`/api/ordreTravail/delete-ordreTravail/${id}`, { method: "DELETE" }),
+		list: () => retryWithBackoff(() => request<any[]>("/api/ordreTravail/retrieve-all-ordreTravails")),
+		get: (id: number) => retryWithBackoff(() => request<any>(`/api/ordreTravail/retrieve-ordreTravail/${id}`)),
+		create: (data: any) => retryWithBackoff(() => request<any>("/api/ordreTravail/add-ordreTravail", { method: "POST", body: data })),
+		update: (data: any) => retryWithBackoff(() => request<any>("/api/ordreTravail/update-ordreTravail", { method: "PUT", body: data })),
+		remove: (id: number) => retryWithBackoff(() => request<void>(`/api/ordreTravail/delete-ordreTravail/${id}`, { method: "DELETE" })),
 	},
 	interventions: {
-		list: () => request<any[]>("/api/ordreIntervention/retrieve-all-ordreInterventions"),
-		get: (id: number) => request<any>(`/api/ordreIntervention/retrieve-ordreIntervention/${id}`),
-		create: (data: any) => request<any>("/api/ordreIntervention/add-ordreIntervention", { method: "POST", body: data }),
-		update: (data: any) => request<any>("/api/ordreIntervention/update-ordreIntervention", { method: "PUT", body: data }),
-		remove: (id: number) => request<void>(`/api/ordreIntervention/delete-ordreIntervention/${id}`, { method: "DELETE" }),
+		list: () => retryWithBackoff(() => request<any[]>("/api/ordreIntervention/retrieve-all-ordreInterventions")),
+		get: (id: number) => retryWithBackoff(() => request<any>(`/api/ordreIntervention/retrieve-ordreIntervention/${id}`)),
+		create: (data: any) => retryWithBackoff(() => request<any>("/api/ordreIntervention/add-ordreIntervention", { method: "POST", body: data })),
+		update: (data: any) => retryWithBackoff(() => request<any>("/api/ordreIntervention/update-ordreIntervention", { method: "PUT", body: data })),
+		remove: (id: number) => retryWithBackoff(() => request<void>(`/api/ordreIntervention/delete-ordreIntervention/${id}`, { method: "DELETE" })),
 	},
 };
