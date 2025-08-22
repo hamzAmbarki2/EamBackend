@@ -2,8 +2,10 @@ package com.eam.user.controller;
 
 import com.eam.user.dto.UserDto;
 import com.eam.user.dto.CredentialsDto;
+import com.eam.user.entity.User;
 import com.eam.user.service.AuthServiceImpl;
 import com.eam.user.service.IAuthService;
+import com.eam.user.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,8 +13,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,10 +27,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthController {
-
+            private final TokenService tokenService;
     private final IAuthService authService;
     private final AuthServiceImpl authServiceImpl; // Pour accéder aux méthodes spécifiques
-
+    public static final String baseUrl = "http://localhost:5173";
     // Simple in-memory blacklist of JWT IDs (jti)
     private static final Set<String> TOKEN_BLACKLIST = ConcurrentHashMap.newKeySet();
 
@@ -122,10 +128,45 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestParam String email) {
-        return forgotPassword(email);
+    @GetMapping("/reset-password")
+    public ResponseEntity<Void> handlePasswordResetLink(@RequestParam String token) {
+        log.info("Traitement du lien de réinitialisation de mot de passe");
+
+        try {
+            // Valider le token sans le marquer comme utilisé
+            Optional<User> user = tokenService.validatePasswordResetTokenForRedirect(token);
+
+            if (user.isPresent()) {
+                // Token valide : rediriger vers le frontend avec le token
+                String redirectUrl = baseUrl + "/reset-password?token=" +
+                        URLEncoder.encode(token, StandardCharsets.UTF_8);
+
+                log.info("Redirection vers le frontend pour l'utilisateur: {}", user.get().getEmail());
+
+                return ResponseEntity.status(HttpStatus.FOUND)
+                        .location(URI.create(redirectUrl))
+                        .build();
+            } else {
+                // Token invalide : rediriger vers la page de demande
+                String redirectUrl = baseUrl + "/forgot-password?error=invalid_token";
+
+                log.warn("Token invalide, redirection vers forgot-password");
+
+                return ResponseEntity.status(HttpStatus.FOUND)
+                        .location(URI.create(redirectUrl))
+                        .build();
+            }
+        } catch (Exception e) {
+            log.error("Erreur lors du traitement du token: {}", e.getMessage());
+
+            String redirectUrl = baseUrl + "/forgot-password?error=server_error";
+
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .location(URI.create(redirectUrl))
+                    .build();
+        }
     }
+
 
     @PostMapping("/reset-password-confirm")
     public ResponseEntity<?> resetPasswordConfirm(
@@ -147,7 +188,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(error);
         }
     }
-
+/*
     @GetMapping("/reset-password")
     public ResponseEntity<?> resetPasswordGet(@RequestParam String token) {
         // Endpoint pour valider le token de réinitialisation (utilisé par le frontend)
@@ -163,6 +204,8 @@ public class AuthController {
             return ResponseEntity.badRequest().body(error);
         }
     }
+
+ */
 
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(@RequestParam String refreshToken) {

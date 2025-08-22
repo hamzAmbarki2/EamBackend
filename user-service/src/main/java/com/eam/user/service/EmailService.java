@@ -54,7 +54,7 @@ public class EmailService {
             throw new IllegalArgumentException("Recipient email cannot be null or empty");
         }
         log.debug("Sending password reset email to: {}", toEmail);
-        String resetUrl = baseUrl + "/api/auth/reset-password?token=" + resetToken;
+        String resetUrl = baseUrl + "/reset-password?token=" + resetToken;
         Map<String, String> templateParams = new HashMap<>();
         templateParams.put("email", toEmail.trim());
         templateParams.put("from_name", fromEmail);

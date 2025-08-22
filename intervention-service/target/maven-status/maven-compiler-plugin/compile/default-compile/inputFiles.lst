@@ -1,6 +1,0 @@
-/workspace/intervention-service/src/main/java/com/eam/intervention/repository/OrdreInterventionRepository.java
-/workspace/intervention-service/src/main/java/com/eam/intervention/entity/OrdreIntervention.java
-/workspace/intervention-service/src/main/java/com/eam/intervention/service/IOrdreInterventionService.java
-/workspace/intervention-service/src/main/java/com/eam/intervention/InterventionServiceApplication.java
-/workspace/intervention-service/src/main/java/com/eam/intervention/service/OrdreInterventionServiceImpl.java
-/workspace/intervention-service/src/main/java/com/eam/intervention/control/OrdreInterventionRestController.java

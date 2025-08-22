@@ -166,5 +166,40 @@ public class TokenService {
         tokenRepository.deleteExpiredTokens(LocalDateTime.now());
         log.info("Nettoyage des tokens expirés terminé");
     }
+    public Optional<User> validatePasswordResetTokenForRedirect(String token) {
+        Optional<VerificationToken> verificationToken = tokenRepository.findByToken(token);
+
+        if (verificationToken.isEmpty()) {
+            log.warn("Token de réinitialisation non trouvé : {}", token);
+            return Optional.empty();
+        }
+
+        VerificationToken vToken = verificationToken.get();
+
+        // Vérifier si le token est du bon type
+        if (vToken.getTokenType() != VerificationToken.TokenType.PASSWORD_RESET) {
+            log.warn("Token de type incorrect pour la réinitialisation : {}", token);
+            return Optional.empty();
+        }
+
+        // Vérifier si le token a expiré
+        if (vToken.isExpired()) {
+            log.warn("Token de réinitialisation expiré : {}", token);
+            return Optional.empty();
+        }
+
+        // Vérifier si le token a déjà été utilisé
+        if (vToken.isUsed()) {
+            log.warn("Token de réinitialisation déjà utilisé : {}", token);
+            return Optional.empty();
+        }
+
+        // NE PAS marquer le token comme utilisé ici
+        // Il sera marqué comme utilisé lors de la confirmation finale
+
+        log.info("Token de réinitialisation validé pour redirection pour l'utilisateur : {}",
+                vToken.getUser().getEmail());
+        return Optional.of(vToken.getUser());
+    }
 }
 
