@@ -56,6 +56,8 @@ import { UserForm } from "@/components/forms/UserForm";
 import { UserDetailModal } from "@/components/forms/UserDetailModal";
 import { DeleteConfirmationDialog } from "@/components/forms/DeleteConfirmationDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
+import { api } from "@/lib/api";
 
 interface User {
   id: string;
@@ -187,6 +189,30 @@ const UsersPage = () => {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [users, setUsers] = useState<User[]>(initialUsers);
+  // Load users from backend on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await api.users.list();
+        const mapped: User[] = (data || []).map((u: any) => ({
+          id: String(u.id),
+          name: u.name || "",
+          email: u.email,
+          phone: u.phone || "",
+          cin: u.cin || u.CIN || "",
+          role: u.role || "Technicien",
+          department: u.department || "Maintenance",
+          status: (u.status || "ACTIVE").toString().toLowerCase(),
+          lastLogin: u.lastLogin ? new Date(u.lastLogin).toLocaleString("fr-FR") : "Jamais",
+          createdAt: u.createdAt ? new Date(u.createdAt).toLocaleDateString("fr-FR") : "",
+          avatar: u.avatar,
+        }));
+        if (mapped.length) setUsers(mapped);
+      } catch (_) {
+        // fallback to mock
+      }
+    })();
+  }, []);
   
   // Modal states
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -211,13 +237,32 @@ const UsersPage = () => {
   const handleCreateUser = async (userData: User) => {
     setIsLoading(true);
     try {
-      const newUser = {
-        ...userData,
-        id: (users.length + 1).toString(),
-        lastLogin: "Jamais",
-        createdAt: new Date().toLocaleDateString('fr-FR')
+      const payload: any = {
+        email: userData.email,
+        password: userData.status === "pending" ? "changeme123" : "changeme123",
+        role: userData.role?.toUpperCase().replace(" ", "") || "TECHNICIEN",
+        phone: userData.phone,
+        CIN: userData.cin,
+        department: userData.department?.toUpperCase(),
+        status: userData.status?.toUpperCase(),
+        avatar: userData.avatar,
+        name: userData.name,
       };
-      setUsers([...users, newUser]);
+      const created = await api.users.create(payload);
+      const mapped: User = {
+        id: String(created.id),
+        name: created.name || "",
+        email: created.email,
+        phone: created.phone || "",
+        cin: created.cin || created.CIN || "",
+        role: created.role || "Technicien",
+        department: created.department || "Maintenance",
+        status: (created.status || "ACTIVE").toString().toLowerCase(),
+        lastLogin: created.lastLogin ? new Date(created.lastLogin).toLocaleString("fr-FR") : "Jamais",
+        createdAt: created.createdAt ? new Date(created.createdAt).toLocaleDateString("fr-FR") : new Date().toLocaleDateString('fr-FR'),
+        avatar: created.avatar,
+      };
+      setUsers([...users, mapped]);
       setIsCreateDialogOpen(false);
       toast({
         title: "Utilisateur créé",
@@ -237,7 +282,32 @@ const UsersPage = () => {
   const handleEditUser = async (userData: User) => {
     setIsLoading(true);
     try {
-      setUsers(users.map(user => user.id === userData.id ? userData : user));
+      const payload: any = {
+        id: Number(userData.id),
+        email: userData.email,
+        role: userData.role?.toUpperCase().replace(" ", ""),
+        phone: userData.phone,
+        CIN: userData.cin,
+        department: userData.department?.toUpperCase(),
+        status: userData.status?.toUpperCase(),
+        avatar: userData.avatar,
+        name: userData.name,
+      };
+      const updated = await api.users.update(payload);
+      const mapped: User = {
+        id: String(updated.id),
+        name: updated.name || "",
+        email: updated.email,
+        phone: updated.phone || "",
+        cin: updated.cin || updated.CIN || "",
+        role: updated.role || "Technicien",
+        department: updated.department || "Maintenance",
+        status: (updated.status || "ACTIVE").toString().toLowerCase(),
+        lastLogin: updated.lastLogin ? new Date(updated.lastLogin).toLocaleString("fr-FR") : "Jamais",
+        createdAt: updated.createdAt ? new Date(updated.createdAt).toLocaleDateString("fr-FR") : userData.createdAt,
+        avatar: updated.avatar,
+      };
+      setUsers(users.map(user => user.id === userData.id ? mapped : user));
       setIsEditDialogOpen(false);
       setSelectedUser(null);
       toast({
@@ -260,6 +330,7 @@ const UsersPage = () => {
     
     setIsLoading(true);
     try {
+      await api.users.remove(Number(selectedUser.id));
       setUsers(users.filter(user => user.id !== selectedUser.id));
       setIsDeleteDialogOpen(false);
       setSelectedUser(null);
@@ -283,6 +354,7 @@ const UsersPage = () => {
       const newStatus = user.status === "active" ? "inactive" : "active";
       const updatedUser = { ...user, status: newStatus as "active" | "inactive" | "pending" };
       setUsers(users.map(u => u.id === user.id ? updatedUser : u));
+      await api.users.update({ id: Number(user.id), status: newStatus.toUpperCase() });
       toast({
         title: "Statut modifié",
         description: `L'utilisateur ${user.name} est maintenant ${newStatus === "active" ? "actif" : "inactif"}.`

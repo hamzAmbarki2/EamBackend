@@ -58,6 +58,8 @@ import { WorkOrderForm } from "@/components/forms/WorkOrderForm";
 import { WorkOrderDetailModal } from "@/components/forms/WorkOrderDetailModal";
 import { DeleteConfirmationDialog } from "@/components/forms/DeleteConfirmationDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
+import { api } from "@/lib/api";
 
 export interface WorkOrder {
   id: string;
@@ -190,6 +192,29 @@ const WorkOrdersPage = () => {
   const [prioriteFilter, setPrioriteFilter] = useState<string>("all");
   const [statutFilter, setStatutFilter] = useState<string>("all");
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>(initialWorkOrders);
+  // Load work orders from backend on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await api.workOrders.list();
+        const mapped: WorkOrder[] = (data || []).map((w: any) => ({
+          id: String(w.id),
+          title: w.titre,
+          description: w.description,
+          dateEcheance: w.dateCreation ? new Date(w.dateCreation).toISOString().split('T')[0] : "",
+          priorite: w.priorité || "MOYENNE",
+          machine: { id: "", nom: "", emplacement: "" },
+          assigneA: { id: w.assignedTo ? String(w.assignedTo) : "", nom: "", role: "" },
+          statut: w.statut || "EN_ATTENTE",
+          createdAt: w.dateCreation ? new Date(w.dateCreation).toISOString().split('T')[0] : "",
+          interventionsCount: (w.ordreInterventions && Array.isArray(w.ordreInterventions)) ? w.ordreInterventions.length : 0,
+        }));
+        if (mapped.length) setWorkOrders(mapped);
+      } catch (_) {
+        // keep fallback
+      }
+    })();
+  }, []);
   
   // Modal states
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -214,13 +239,28 @@ const WorkOrdersPage = () => {
   const handleCreateWorkOrder = async (workOrderData: WorkOrder) => {
     setIsLoading(true);
     try {
-      const newWorkOrder = {
-        ...workOrderData,
-        id: `WO-${String(workOrders.length + 1).padStart(3, '0')}`,
-        createdAt: new Date().toISOString().split('T')[0],
-        interventionsCount: 0
+      const payload: any = {
+        titre: workOrderData.title,
+        description: workOrderData.description,
+        dateCreation: new Date().toISOString(),
+        priorité: workOrderData.priorite,
+        statut: workOrderData.statut || "EN_ATTENTE",
+        assignedTo: workOrderData.assigneA?.id ? Number(workOrderData.assigneA.id) : null,
       };
-      setWorkOrders([...workOrders, newWorkOrder]);
+      const created = await api.workOrders.create(payload);
+      const mapped: WorkOrder = {
+        id: String(created.id),
+        title: created.titre,
+        description: created.description,
+        dateEcheance: created.dateCreation ? new Date(created.dateCreation).toISOString().split('T')[0] : "",
+        priorite: created.priorité || "MOYENNE",
+        machine: { id: "", nom: "", emplacement: "" },
+        assigneA: { id: created.assignedTo ? String(created.assignedTo) : "", nom: "", role: "" },
+        statut: created.statut || "EN_ATTENTE",
+        createdAt: created.dateCreation ? new Date(created.dateCreation).toISOString().split('T')[0] : "",
+        interventionsCount: (created.ordreInterventions && Array.isArray(created.ordreInterventions)) ? created.ordreInterventions.length : 0,
+      };
+      setWorkOrders([...workOrders, mapped]);
       setIsCreateDialogOpen(false);
       toast({
         title: "Ordre de travail créé",
@@ -240,7 +280,29 @@ const WorkOrdersPage = () => {
   const handleEditWorkOrder = async (workOrderData: WorkOrder) => {
     setIsLoading(true);
     try {
-      setWorkOrders(workOrders.map(wo => wo.id === workOrderData.id ? workOrderData : wo));
+      const payload: any = {
+        id: Number(workOrderData.id),
+        titre: workOrderData.title,
+        description: workOrderData.description,
+        dateCreation: new Date(workOrderData.createdAt || new Date()).toISOString(),
+        priorité: workOrderData.priorite,
+        statut: workOrderData.statut,
+        assignedTo: workOrderData.assigneA?.id ? Number(workOrderData.assigneA.id) : null,
+      };
+      const updated = await api.workOrders.update(payload);
+      const mapped: WorkOrder = {
+        id: String(updated.id),
+        title: updated.titre,
+        description: updated.description,
+        dateEcheance: updated.dateCreation ? new Date(updated.dateCreation).toISOString().split('T')[0] : workOrderData.dateEcheance,
+        priorite: updated.priorité || workOrderData.priorite,
+        machine: { id: "", nom: "", emplacement: "" },
+        assigneA: { id: updated.assignedTo ? String(updated.assignedTo) : workOrderData.assigneA.id, nom: "", role: "" },
+        statut: updated.statut || workOrderData.statut,
+        createdAt: updated.dateCreation ? new Date(updated.dateCreation).toISOString().split('T')[0] : workOrderData.createdAt,
+        interventionsCount: (updated.ordreInterventions && Array.isArray(updated.ordreInterventions)) ? updated.ordreInterventions.length : (workOrderData.interventionsCount || 0),
+      };
+      setWorkOrders(workOrders.map(wo => wo.id === workOrderData.id ? mapped : wo));
       setIsEditDialogOpen(false);
       setSelectedWorkOrder(null);
       toast({
@@ -263,6 +325,7 @@ const WorkOrdersPage = () => {
     
     setIsLoading(true);
     try {
+      await api.workOrders.remove(Number(selectedWorkOrder.id));
       setWorkOrders(workOrders.filter(wo => wo.id !== selectedWorkOrder.id));
       setIsDeleteDialogOpen(false);
       setSelectedWorkOrder(null);
