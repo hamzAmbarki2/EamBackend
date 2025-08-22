@@ -62,7 +62,7 @@ const SignIn = () => {
                 <p className="text-xs text-muted-foreground">EAM Platform</p>
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text.white">
+            <CardTitle className="text-2xl font-bold text-white">
               Welcome Back
             </CardTitle>
             <p className="text-white/70">
@@ -100,7 +100,7 @@ const SignIn = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="w-full px-4 py-3 pr-12 rounded-xl bg.white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-primary focus:bg-white/15 transition-all"
+                    className="w-full px-4 py-3 pr-12 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:border-primary focus:bg-white/15 transition-all"
                     required
                   />
                   <button

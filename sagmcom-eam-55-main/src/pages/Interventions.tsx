@@ -503,11 +503,11 @@ const InterventionsPage = () => {
                       <SelectValue placeholder="Statut" />
                     </SelectTrigger>
                     <SelectContent className="glass border-white/20">
-                      <SelectItem value="all" className="text-white hover:bg.white/10">Tous</SelectItem>
+                      <SelectItem value="all" className="text-white hover:bg-white/10">Tous</SelectItem>
                       <SelectItem value="PLANIFIEE" className="text-white hover:bg-white/10">Planifiée</SelectItem>
                       <SelectItem value="EN_COURS" className="text-white hover:bg-white/10">En cours</SelectItem>
                       <SelectItem value="TERMINEE" className="text-white hover:bg-white/10">Terminée</SelectItem>
-                      <SelectItem value="ANNULEE" className="text.white hover:bg-white/10">Annulée</SelectItem>
+                      <SelectItem value="ANNULEE" className="text-white hover:bg-white/10">Annulée</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
