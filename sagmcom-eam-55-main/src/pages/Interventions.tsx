@@ -58,6 +58,8 @@ import { InterventionForm } from "@/components/forms/InterventionForm";
 import { InterventionDetailModal } from "@/components/forms/InterventionDetailModal";
 import { DeleteConfirmationDialog } from "@/components/forms/DeleteConfirmationDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
+import { api } from "@/lib/api";
 
 export interface Intervention {
   id: string;
@@ -220,6 +222,33 @@ const InterventionsPage = () => {
   
   const { toast } = useToast();
 
+  // Load interventions from backend on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await api.interventions.list();
+        const mapped: Intervention[] = (data || []).map((i: any) => ({
+          id: String(i.id),
+          dateIntervention: i.dateIntervention ? new Date(i.dateIntervention).toISOString().split('T')[0] : "",
+          description: i.description,
+          rapport: i.rapport || "",
+          statut: (i.statut || "EN_COURS") as Intervention["statut"],
+          ordreTravail: i.ordreTravail ? {
+            id: String(i.ordreTravail.id),
+            title: i.ordreTravail.titre || "",
+            machine: { nom: i.ordreTravail.machine?.nom || "", emplacement: i.ordreTravail.machine?.emplacement || "" }
+          } : { id: "", title: "", machine: { nom: "", emplacement: "" } },
+          technicien: { id: "", nom: "", role: "" },
+          duree: undefined,
+          createdAt: i.dateCreation ? new Date(i.dateCreation).toISOString().split('T')[0] : "",
+        }));
+        if (mapped.length) setInterventions(mapped);
+      } catch (_) {
+        // keep initial fallback
+      }
+    })();
+  }, []);
+ 
   const filteredInterventions = interventions.filter(intervention => {
     const matchesSearch = intervention.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          intervention.ordreTravail.machine.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -227,17 +256,38 @@ const InterventionsPage = () => {
     const matchesStatut = statutFilter === "all" || intervention.statut === statutFilter;
     return matchesSearch && matchesStatut;
   });
-
+ 
   // CRUD operations
   const handleCreateIntervention = async (interventionData: Intervention) => {
     setIsLoading(true);
     try {
-      const newIntervention = {
-        ...interventionData,
-        id: `INT-${String(interventions.length + 1).padStart(3, '0')}`,
-        createdAt: new Date().toISOString().split('T')[0]
+      const payload: any = {
+        titre: interventionData.description?.slice(0, 60) || "Intervention",
+        description: interventionData.description,
+        dateCreation: new Date().toISOString(),
+        priorité: "MOYENNE",
+        statut: (interventionData.statut === "PLANIFIEE" ? "EN_ATTENTE" : interventionData.statut === "TERMINEE" ? "TERMINE" : interventionData.statut === "ANNULEE" ? "ANNULE" : "EN_COURS"),
+        rapport: interventionData.rapport,
+        dateIntervention: interventionData.dateIntervention ? new Date(interventionData.dateIntervention).toISOString() : null,
+        ordreTravailId: interventionData.ordreTravail?.id ? Number(interventionData.ordreTravail.id) : null,
       };
-      setInterventions([...interventions, newIntervention]);
+      const created = await api.interventions.create(payload);
+      const mapped: Intervention = {
+        id: String(created.id),
+        dateIntervention: created.dateIntervention ? new Date(created.dateIntervention).toISOString().split('T')[0] : "",
+        description: created.description,
+        rapport: created.rapport || "",
+        statut: (created.statut === "EN_ATTENTE" ? "PLANIFIEE" : created.statut === "TERMINE" ? "TERMINEE" : created.statut === "ANNULE" ? "ANNULEE" : "EN_COURS"),
+        ordreTravail: created.ordreTravail ? {
+          id: String(created.ordreTravail.id),
+          title: created.ordreTravail.titre || "",
+          machine: { nom: created.ordreTravail.machine?.nom || "", emplacement: created.ordreTravail.machine?.emplacement || "" }
+        } : { id: "", title: "", machine: { nom: "", emplacement: "" } },
+        technicien: { id: "", nom: "", role: "" },
+        duree: undefined,
+        createdAt: created.dateCreation ? new Date(created.dateCreation).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      };
+      setInterventions([...interventions, mapped]);
       setIsCreateDialogOpen(false);
       toast({
         title: "Intervention créée",
@@ -253,11 +303,38 @@ const InterventionsPage = () => {
       setIsLoading(false);
     }
   };
-
+ 
   const handleEditIntervention = async (interventionData: Intervention) => {
     setIsLoading(true);
     try {
-      setInterventions(interventions.map(int => int.id === interventionData.id ? interventionData : int));
+      const payload: any = {
+        id: Number(interventionData.id),
+        titre: interventionData.description?.slice(0, 60) || "Intervention",
+        description: interventionData.description,
+        dateCreation: new Date(interventionData.createdAt || new Date()).toISOString(),
+        priorité: "MOYENNE",
+        statut: (interventionData.statut === "PLANIFIEE" ? "EN_ATTENTE" : interventionData.statut === "TERMINEE" ? "TERMINE" : interventionData.statut === "ANNULEE" ? "ANNULE" : "EN_COURS"),
+        rapport: interventionData.rapport,
+        dateIntervention: interventionData.dateIntervention ? new Date(interventionData.dateIntervention).toISOString() : null,
+        ordreTravailId: interventionData.ordreTravail?.id ? Number(interventionData.ordreTravail.id) : null,
+      };
+      const updated = await api.interventions.update(payload);
+      const mapped: Intervention = {
+        id: String(updated.id),
+        dateIntervention: updated.dateIntervention ? new Date(updated.dateIntervention).toISOString().split('T')[0] : interventionData.dateIntervention,
+        description: updated.description,
+        rapport: updated.rapport || interventionData.rapport,
+        statut: (updated.statut === "EN_ATTENTE" ? "PLANIFIEE" : updated.statut === "TERMINE" ? "TERMINEE" : updated.statut === "ANNULE" ? "ANNULEE" : "EN_COURS"),
+        ordreTravail: updated.ordreTravail ? {
+          id: String(updated.ordreTravail.id),
+          title: updated.ordreTravail.titre || interventionData.ordreTravail.title,
+          machine: { nom: updated.ordreTravail.machine?.nom || "", emplacement: updated.ordreTravail.machine?.emplacement || "" }
+        } : interventionData.ordreTravail,
+        technicien: interventionData.technicien,
+        duree: interventionData.duree,
+        createdAt: updated.dateCreation ? new Date(updated.dateCreation).toISOString().split('T')[0] : interventionData.createdAt,
+      };
+      setInterventions(interventions.map(int => int.id === interventionData.id ? mapped : int));
       setIsEditDialogOpen(false);
       setSelectedIntervention(null);
       toast({
@@ -274,12 +351,13 @@ const InterventionsPage = () => {
       setIsLoading(false);
     }
   };
-
+ 
   const handleDeleteIntervention = async () => {
     if (!selectedIntervention) return;
     
     setIsLoading(true);
     try {
+      await api.interventions.remove(Number(selectedIntervention.id));
       setInterventions(interventions.filter(int => int.id !== selectedIntervention.id));
       setIsDeleteDialogOpen(false);
       setSelectedIntervention(null);
@@ -416,11 +494,11 @@ const InterventionsPage = () => {
                       <SelectValue placeholder="Statut" />
                     </SelectTrigger>
                     <SelectContent className="glass border-white/20">
-                      <SelectItem value="all" className="text-white hover:bg-white/10">Tous</SelectItem>
+                      <SelectItem value="all" className="text-white hover:bg.white/10">Tous</SelectItem>
                       <SelectItem value="PLANIFIEE" className="text-white hover:bg-white/10">Planifiée</SelectItem>
                       <SelectItem value="EN_COURS" className="text-white hover:bg-white/10">En cours</SelectItem>
                       <SelectItem value="TERMINEE" className="text-white hover:bg-white/10">Terminée</SelectItem>
-                      <SelectItem value="ANNULEE" className="text-white hover:bg-white/10">Annulée</SelectItem>
+                      <SelectItem value="ANNULEE" className="text.white hover:bg-white/10">Annulée</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
@@ -472,7 +550,7 @@ const InterventionsPage = () => {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center space-x-1 text-white">
+                            <div className="flex items.center space-x-1 text-white">
                               <Calendar className="h-4 w-4 text-white/60" />
                               <span>{new Date(intervention.dateIntervention).toLocaleDateString('fr-FR')}</span>
                             </div>
