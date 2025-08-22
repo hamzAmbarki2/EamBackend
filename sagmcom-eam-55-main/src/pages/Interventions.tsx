@@ -210,7 +210,9 @@ const InterventionsPage = () => {
   };
   const [searchTerm, setSearchTerm] = useState("");
   const [statutFilter, setStatutFilter] = useState<string>("all");
-  const [interventions, setInterventions] = useState<Intervention[]>(initialInterventions);
+  const [interventions, setInterventions] = useState<Intervention[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   // Modal states
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -226,6 +228,7 @@ const InterventionsPage = () => {
   useEffect(() => {
     (async () => {
       try {
+        setLoading(true);
         const data = await api.interventions.list();
         const mapped: Intervention[] = (data || []).map((i: any) => ({
           id: String(i.id),
@@ -242,9 +245,11 @@ const InterventionsPage = () => {
           duree: undefined,
           createdAt: i.dateCreation ? new Date(i.dateCreation).toISOString().split('T')[0] : "",
         }));
-        if (mapped.length) setInterventions(mapped);
-      } catch (_) {
-        // keep initial fallback
+        setInterventions(mapped);
+      } catch (e: any) {
+        setError(e?.message || "Erreur de chargement des interventions");
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);

@@ -2,20 +2,46 @@ export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
-async function request<T>(path: string, options: { method?: HttpMethod; body?: any; headers?: Record<string, string> } = {}): Promise<T> {
-	const { method = "GET", body, headers = {} } = options;
-	const res = await fetch(`${BASE_URL}${path}`, {
-		method,
-		headers: {
-			"Content-Type": "application/json",
-			...headers
-		},
-		body: body ? JSON.stringify(body) : undefined,
-	});
-	if (!res.ok) {
-		throw new Error(`API ${method} ${path} failed: ${res.status}`);
+function getAuthHeaders(): Record<string, string> {
+	try {
+		const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+		return token ? { Authorization: `Bearer ${token}` } : {};
+	} catch {
+		return {};
 	}
-	return (await res.json()) as T;
+}
+
+async function request<T>(
+	path: string,
+	options: { method?: HttpMethod; body?: any; headers?: Record<string, string>; timeoutMs?: number } = {}
+): Promise<T> {
+	const { method = "GET", body, headers = {}, timeoutMs = 10000 } = options;
+	const controller = new AbortController();
+	const timeout = setTimeout(() => controller.abort(), timeoutMs);
+	try {
+		const res = await fetch(`${BASE_URL}${path}`, {
+			method,
+			headers: {
+				"Content-Type": "application/json",
+				...getAuthHeaders(),
+				...headers,
+			},
+			body: body ? JSON.stringify(body) : undefined,
+			signal: controller.signal,
+		});
+		if (!res.ok) {
+			const text = await res.text().catch(() => "");
+			throw new Error(`API ${method} ${path} failed: ${res.status} ${text}`);
+		}
+		const contentType = res.headers.get("content-type") || "";
+		if (contentType.includes("application/json")) {
+			return (await res.json()) as T;
+		}
+		// @ts-ignore allow void
+		return undefined as T;
+	} finally {
+		clearTimeout(timeout);
+	}
 }
 
 export const api = {

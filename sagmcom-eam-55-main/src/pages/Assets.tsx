@@ -231,14 +231,16 @@ const AssetsPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [criticalityFilter, setCriticalityFilter] = useState<string>("all");
-  const [assets, setAssets] = useState<Asset[]>(initialAssets);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Load assets from backend on mount
   useEffect(() => {
     (async () => {
       try {
+        setLoading(true);
         const data = await api.assets.list();
-        // Map backend Machine -> Asset view model
         const mapped: Asset[] = (data || []).map((m: any) => ({
           id: String(m.id),
           name: m.nom,
@@ -254,9 +256,11 @@ const AssetsPage = () => {
           manufacturer: m.manufacturer ?? "",
           criticality: (m.criticality || "MEDIUM").toString().toLowerCase() as Asset["criticality"],
         }));
-        if (mapped.length) setAssets(mapped);
-      } catch (_) {
-        // keep initial mock data as fallback
+        setAssets(mapped);
+      } catch (e: any) {
+        setError(e?.message || "Erreur de chargement des assets");
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);

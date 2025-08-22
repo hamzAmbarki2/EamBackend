@@ -191,11 +191,14 @@ const WorkOrdersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [prioriteFilter, setPrioriteFilter] = useState<string>("all");
   const [statutFilter, setStatutFilter] = useState<string>("all");
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(initialWorkOrders);
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   // Load work orders from backend on mount
   useEffect(() => {
     (async () => {
       try {
+        setLoading(true);
         const data = await api.workOrders.list();
         const mapped: WorkOrder[] = (data || []).map((w: any) => ({
           id: String(w.id),
@@ -209,9 +212,11 @@ const WorkOrdersPage = () => {
           createdAt: w.dateCreation ? new Date(w.dateCreation).toISOString().split('T')[0] : "",
           interventionsCount: (w.ordreInterventions && Array.isArray(w.ordreInterventions)) ? w.ordreInterventions.length : 0,
         }));
-        if (mapped.length) setWorkOrders(mapped);
-      } catch (_) {
-        // keep fallback
+        setWorkOrders(mapped);
+      } catch (e: any) {
+        setError(e?.message || "Erreur de chargement des ordres de travail");
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);

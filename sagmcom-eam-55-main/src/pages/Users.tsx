@@ -188,11 +188,14 @@ const UsersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   // Load users from backend on mount
   useEffect(() => {
     (async () => {
       try {
+        setLoading(true);
         const data = await api.users.list();
         const mapped: User[] = (data || []).map((u: any) => ({
           id: String(u.id),
@@ -207,9 +210,11 @@ const UsersPage = () => {
           createdAt: u.createdAt ? new Date(u.createdAt).toLocaleDateString("fr-FR") : "",
           avatar: u.avatar,
         }));
-        if (mapped.length) setUsers(mapped);
-      } catch (_) {
-        // fallback to mock
+        setUsers(mapped);
+      } catch (e: any) {
+        setError(e?.message || "Erreur de chargement des utilisateurs");
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
