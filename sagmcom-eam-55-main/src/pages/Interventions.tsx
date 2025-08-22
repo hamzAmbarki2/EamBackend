@@ -58,6 +58,7 @@ import { InterventionForm } from "@/components/forms/InterventionForm";
 import { InterventionDetailModal } from "@/components/forms/InterventionDetailModal";
 import { DeleteConfirmationDialog } from "@/components/forms/DeleteConfirmationDialog";
 import { useToast } from "@/hooks/use-toast";
+import { AlertBanner } from "@/components/AlertBanner";
 import { useEffect } from "react";
 import { api } from "@/lib/api";
 
@@ -404,6 +405,9 @@ const InterventionsPage = () => {
         
         <main className="pt-16 p-6">
           <div className="max-w-7xl mx-auto space-y-8">
+            {error && (
+              <AlertBanner message={error} onRetry={() => location.reload()} />
+            )}
             {/* Page Header */}
             <div className="flex items-center justify-between">
               <div>

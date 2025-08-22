@@ -60,6 +60,7 @@ import { DeleteConfirmationDialog } from "@/components/forms/DeleteConfirmationD
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { api } from "@/lib/api";
+import { AlertBanner } from "@/components/AlertBanner";
 
 export interface WorkOrder {
   id: string;
@@ -372,6 +373,9 @@ const WorkOrdersPage = () => {
         
         <main className="pt-16 p-6">
           <div className="max-w-7xl mx-auto space-y-8">
+            {error && (
+              <AlertBanner message={error} onRetry={() => location.reload()} />
+            )}
             {/* Page Header */}
             <div className="flex items-center justify-between">
               <div>
