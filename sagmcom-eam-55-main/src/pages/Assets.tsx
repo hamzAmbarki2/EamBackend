@@ -58,6 +58,8 @@ import { AssetForm } from "@/components/forms/AssetForm";
 import { AssetDetailModal } from "@/components/forms/AssetDetailModal";
 import { DeleteConfirmationDialog } from "@/components/forms/DeleteConfirmationDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
+import { api } from "@/lib/api";
 
 interface Asset {
   id: string;
@@ -230,6 +232,34 @@ const AssetsPage = () => {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [criticalityFilter, setCriticalityFilter] = useState<string>("all");
   const [assets, setAssets] = useState<Asset[]>(initialAssets);
+
+  // Load assets from backend on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await api.assets.list();
+        // Map backend Machine -> Asset view model
+        const mapped: Asset[] = (data || []).map((m: any) => ({
+          id: String(m.id),
+          name: m.nom,
+          model: m.model ?? "",
+          serialNumber: m.serialNumber ?? "",
+          type: m.type,
+          location: m.emplacement,
+          status: (m.assetStatus || "OPERATIONAL").toString().toLowerCase() as Asset["status"],
+          condition: (m.condition || "GOOD").toString().toLowerCase() as Asset["condition"],
+          lastMaintenance: m.dateDernièreMaintenance ? new Date(m.dateDernièreMaintenance).toLocaleDateString("fr-FR") : "",
+          nextMaintenance: m.dateProchaineMainenance ? new Date(m.dateProchaineMainenance).toLocaleDateString("fr-FR") : "",
+          installedDate: m.installedDate ? new Date(m.installedDate).toLocaleDateString("fr-FR") : "",
+          manufacturer: m.manufacturer ?? "",
+          criticality: (m.criticality || "MEDIUM").toString().toLowerCase() as Asset["criticality"],
+        }));
+        if (mapped.length) setAssets(mapped);
+      } catch (_) {
+        // keep initial mock data as fallback
+      }
+    })();
+  }, []);
   
   // Modal states
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -256,11 +286,38 @@ const AssetsPage = () => {
   const handleCreateAsset = async (assetData: Asset) => {
     setIsLoading(true);
     try {
-      const newAsset = {
-        ...assetData,
-        id: `AST-${String(assets.length + 1).padStart(3, '0')}`
+      // map form -> backend Machine
+      const payload: any = {
+        nom: assetData.name,
+        model: assetData.model,
+        serialNumber: assetData.serialNumber,
+        type: assetData.type,
+        emplacement: assetData.location,
+        assetStatus: assetData.status.toUpperCase(),
+        condition: assetData.condition.toUpperCase(),
+        dateDernièreMaintenance: assetData.lastMaintenance ? new Date(assetData.lastMaintenance.split('/').reverse().join('-')).toISOString() : null,
+        dateProchaineMainenance: assetData.nextMaintenance ? new Date(assetData.nextMaintenance.split('/').reverse().join('-')).toISOString() : null,
+        installedDate: assetData.installedDate ? new Date(assetData.installedDate.split('/').reverse().join('-')).toISOString() : null,
+        manufacturer: assetData.manufacturer,
+        criticality: assetData.criticality.toUpperCase(),
       };
-      setAssets([...assets, newAsset]);
+      const created = await api.assets.create(payload);
+      const createdVm: Asset = {
+        id: String(created.id),
+        name: created.nom,
+        model: created.model ?? "",
+        serialNumber: created.serialNumber ?? "",
+        type: created.type,
+        location: created.emplacement,
+        status: (created.assetStatus || "OPERATIONAL").toString().toLowerCase(),
+        condition: (created.condition || "GOOD").toString().toLowerCase(),
+        lastMaintenance: created.dateDernièreMaintenance ? new Date(created.dateDernièreMaintenance).toLocaleDateString("fr-FR") : "",
+        nextMaintenance: created.dateProchaineMainenance ? new Date(created.dateProchaineMainenance).toLocaleDateString("fr-FR") : "",
+        installedDate: created.installedDate ? new Date(created.installedDate).toLocaleDateString("fr-FR") : "",
+        manufacturer: created.manufacturer ?? "",
+        criticality: (created.criticality || "MEDIUM").toString().toLowerCase(),
+      } as Asset;
+      setAssets([...assets, createdVm]);
       setIsCreateDialogOpen(false);
       toast({
         title: "Équipement créé",
@@ -280,7 +337,38 @@ const AssetsPage = () => {
   const handleEditAsset = async (assetData: Asset) => {
     setIsLoading(true);
     try {
-      setAssets(assets.map(asset => asset.id === assetData.id ? assetData : asset));
+      const payload: any = {
+        id: Number(assetData.id),
+        nom: assetData.name,
+        model: assetData.model,
+        serialNumber: assetData.serialNumber,
+        type: assetData.type,
+        emplacement: assetData.location,
+        assetStatus: assetData.status.toUpperCase(),
+        condition: assetData.condition.toUpperCase(),
+        dateDernièreMaintenance: assetData.lastMaintenance ? new Date(assetData.lastMaintenance.split('/').reverse().join('-')).toISOString() : null,
+        dateProchaineMainenance: assetData.nextMaintenance ? new Date(assetData.nextMaintenance.split('/').reverse().join('-')).toISOString() : null,
+        installedDate: assetData.installedDate ? new Date(assetData.installedDate.split('/').reverse().join('-')).toISOString() : null,
+        manufacturer: assetData.manufacturer,
+        criticality: assetData.criticality.toUpperCase(),
+      };
+      const updated = await api.assets.update(payload);
+      const updatedVm: Asset = {
+        id: String(updated.id),
+        name: updated.nom,
+        model: updated.model ?? "",
+        serialNumber: updated.serialNumber ?? "",
+        type: updated.type,
+        location: updated.emplacement,
+        status: (updated.assetStatus || "OPERATIONAL").toString().toLowerCase(),
+        condition: (updated.condition || "GOOD").toString().toLowerCase(),
+        lastMaintenance: updated.dateDernièreMaintenance ? new Date(updated.dateDernièreMaintenance).toLocaleDateString("fr-FR") : "",
+        nextMaintenance: updated.dateProchaineMainenance ? new Date(updated.dateProchaineMainenance).toLocaleDateString("fr-FR") : "",
+        installedDate: updated.installedDate ? new Date(updated.installedDate).toLocaleDateString("fr-FR") : "",
+        manufacturer: updated.manufacturer ?? "",
+        criticality: (updated.criticality || "MEDIUM").toString().toLowerCase(),
+      } as Asset;
+      setAssets(assets.map(asset => asset.id === assetData.id ? updatedVm : asset));
       setIsEditDialogOpen(false);
       setSelectedAsset(null);
       toast({
@@ -303,6 +391,7 @@ const AssetsPage = () => {
     
     setIsLoading(true);
     try {
+      await api.assets.remove(Number(selectedAsset.id));
       setAssets(assets.filter(asset => asset.id !== selectedAsset.id));
       setIsDeleteDialogOpen(false);
       setSelectedAsset(null);
@@ -324,7 +413,10 @@ const AssetsPage = () => {
   const handleChangeAssetStatus = async (asset: Asset, newStatus: "operational" | "maintenance" | "down" | "retired") => {
     try {
       const updatedAsset = { ...asset, status: newStatus };
+      // optimistic UI
       setAssets(assets.map(a => a.id === asset.id ? updatedAsset : a));
+      // push update to backend
+      await api.assets.update({ id: Number(asset.id), assetStatus: newStatus.toUpperCase() });
       toast({
         title: "Statut modifié",
         description: `L'équipement ${asset.name} est maintenant ${
