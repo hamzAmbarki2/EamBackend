@@ -47,6 +47,35 @@ public class Machine {
     @NotBlank
     private String nom;
 
+    // ===== FRONTEND ALIGNMENT FIELDS =====
+    /**
+     * Additional descriptive fields to align with sagmcom-eam-55-main template
+     */
+    private String model;
+    private String serialNumber;
+    private String manufacturer;
+    
+    @Temporal(TemporalType.DATE)
+    private Date installedDate;
+    
+    /**
+     * Functional status specific to assets (independent from workflow 'statut')
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "asset_status")
+    private com.eam.asset.enums.AssetStatus assetStatus = com.eam.asset.enums.AssetStatus.OPERATIONAL;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "condition_level")
+    private com.eam.asset.enums.ConditionLevel condition = com.eam.asset.enums.ConditionLevel.GOOD;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "criticality_level")
+    private com.eam.asset.enums.CriticalityLevel criticality = com.eam.asset.enums.CriticalityLevel.MEDIUM;
+    
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     // ===== ODOO INTEGRATION FIELDS =====
     // These fields enable Odoo synchronization while preserving existing structure
     

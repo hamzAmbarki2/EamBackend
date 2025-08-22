@@ -45,4 +45,16 @@ public class User {
 
     @Column(name = "avatar")
     private String avatar;
+
+    // ===== FRONTEND ALIGNMENT FIELDS =====
+    @Column(name = "name")
+    private String name;
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "last_login")
+    private java.util.Date lastLogin;
+    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at")
+    private java.util.Date createdAt;
 }

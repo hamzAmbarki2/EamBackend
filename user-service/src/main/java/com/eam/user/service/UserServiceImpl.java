@@ -67,7 +67,8 @@ public class UserServiceImpl implements IUserService {
         existingUser.setCIN(userDto.getCIN());
         existingUser.setDepartment(userDto.getDepartment());
         existingUser.setStatus(userDto.getStatus());
-        existingUser.setAvatar(userDto.getAvatar());
+        		existingUser.setAvatar(userDto.getAvatar());
+		existingUser.setName(userDto.getName());
 
         User savedUser = userRepository.save(existingUser);
         return convertToDto(savedUser);
@@ -104,9 +105,10 @@ public class UserServiceImpl implements IUserService {
         dto.setCIN(user.getCIN());
         dto.setDepartment(user.getDepartment());
         dto.setStatus(user.getStatus());
-        dto.setAvatar(user.getAvatar());
-        return dto;
-    }
+        		dto.setAvatar(user.getAvatar());
+		dto.setName(user.getName());
+		return dto;
+	}
 
     private User convertToEntity(UserDto dto) {
         User user = new User();
@@ -117,8 +119,9 @@ public class UserServiceImpl implements IUserService {
         user.setCIN(dto.getCIN());
         user.setDepartment(dto.getDepartment());
         user.setStatus(dto.getStatus() != null ? dto.getStatus() : StatusType.ACTIVE);
-        user.setAvatar(dto.getAvatar());
-        return user;
-    }
+        		user.setAvatar(dto.getAvatar());
+		user.setName(dto.getName());
+		return user;
+	}
 }
 
