@@ -13,27 +13,29 @@ import jakarta.validation.constraints.*;
 @AllArgsConstructor
 public class UserDto {
 
-    private Long id;
+	private Long id;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email should be valid")
-    private String email;
+	@NotBlank(message = "Email is required")
+	@Email(message = "Email should be valid")
+	private String email;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters")
-    private String password;
+	@NotBlank(message = "Password is required")
+	@Size(min = 6, message = "Password must be at least 6 characters")
+	private String password;
 
-    private Role role;
+	private Role role;
 
-    private String phone;
+	private String phone;
 
-    private String CIN;
+	private String CIN;
 
-    private DepartmentType department;
+	private DepartmentType department;
 
-    private StatusType status;
+	private StatusType status;
 
-    private String avatar;
+	private String avatar;
 
+	// ===== FRONTEND ALIGNMENT FIELD =====
+	private String name;
 }
 

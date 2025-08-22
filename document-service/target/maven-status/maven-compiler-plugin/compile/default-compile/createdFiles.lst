@@ -1,0 +1,16 @@
+com/eam/document/service/FileValidationService.class
+com/eam/document/entity/Archive.class
+com/eam/document/repository/ArchiveRepository.class
+com/eam/document/entity/Rapport$RapportBuilder.class
+com/eam/document/service/RapportService.class
+com/eam/document/enums/TypeArchive.class
+com/eam/document/service/VirusScanService.class
+com/eam/document/service/ArchiveService.class
+com/eam/document/controller/RapportController.class
+com/eam/document/controller/ArchiveController.class
+com/eam/document/entity/Archive$ArchiveBuilder.class
+com/eam/document/entity/Rapport.class
+com/eam/document/service/IDocumentService.class
+com/eam/document/DocumentServiceApplication.class
+com/eam/document/web/ArchiveStats.class
+com/eam/document/repository/RapportRepository.class

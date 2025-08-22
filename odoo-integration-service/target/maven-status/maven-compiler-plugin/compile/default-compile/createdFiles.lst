@@ -1,0 +1,12 @@
+com/eam/odoo/OdooMappingService.class
+com/eam/odoo/OdooXmlRpc.class
+com/eam/odoo/dto/AssetDTO.class
+com/eam/odoo/OdooIntegrationServiceApplication.class
+com/eam/odoo/OdooClientConfig.class
+com/eam/odoo/OdooAssetService.class
+com/eam/odoo/OdooAuthService.class
+com/eam/odoo/OdooSyncController.class
+com/eam/odoo/OdooProxyController.class
+com/eam/odoo/OdooMaintenanceService.class
+com/eam/odoo/OdooSyncService.class
+com/eam/odoo/dto/MaintenanceRequestDTO.class

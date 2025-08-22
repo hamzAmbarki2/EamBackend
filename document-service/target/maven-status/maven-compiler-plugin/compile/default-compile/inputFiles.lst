@@ -1,0 +1,14 @@
+/workspace/document-service/src/main/java/com/eam/document/entity/Archive.java
+/workspace/document-service/src/main/java/com/eam/document/web/ArchiveStats.java
+/workspace/document-service/src/main/java/com/eam/document/entity/Rapport.java
+/workspace/document-service/src/main/java/com/eam/document/repository/RapportRepository.java
+/workspace/document-service/src/main/java/com/eam/document/DocumentServiceApplication.java
+/workspace/document-service/src/main/java/com/eam/document/enums/TypeArchive.java
+/workspace/document-service/src/main/java/com/eam/document/controller/ArchiveController.java
+/workspace/document-service/src/main/java/com/eam/document/service/VirusScanService.java
+/workspace/document-service/src/main/java/com/eam/document/service/ArchiveService.java
+/workspace/document-service/src/main/java/com/eam/document/service/FileValidationService.java
+/workspace/document-service/src/main/java/com/eam/document/repository/ArchiveRepository.java
+/workspace/document-service/src/main/java/com/eam/document/service/IDocumentService.java
+/workspace/document-service/src/main/java/com/eam/document/service/RapportService.java
+/workspace/document-service/src/main/java/com/eam/document/controller/RapportController.java
