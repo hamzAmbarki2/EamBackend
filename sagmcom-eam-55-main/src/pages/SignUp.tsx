@@ -150,23 +150,11 @@ const SignUp = () => {
     }
   };
 
-  const roles = [
-    "Asset Manager",
-    "Maintenance Technician", 
-    "Operations Manager",
-    "Facility Manager",
-    "Administrator",
-    "Other"
-  ];
+  import { roleOptions, departmentOptions } from "@/lib/enums";
 
-  const departments = [
-    "Operations",
-    "Maintenance", 
-    "Engineering",
-    "Facilities",
-    "IT",
-    "Other"
-  ];
+  const roles = roleOptions;
+
+  const departments = departmentOptions;
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6 py-12">
@@ -316,8 +304,8 @@ const SignUp = () => {
                     required
                   >
                     <option value="" className="bg-slate-800">Sélectionnez votre rôle</option>
-                    {roles.map(role => (
-                      <option key={role} value={role} className="bg-slate-800">{role}</option>
+                    {roles.map(r => (
+                      <option key={r.value} value={r.value} className="bg-slate-800">{r.label}</option>
                     ))}
                   </select>
                   {errors.role && <p className="text-red-400 text-sm">{errors.role}</p>}
@@ -337,8 +325,8 @@ const SignUp = () => {
                     required
                   >
                     <option value="" className="bg-slate-800">Sélectionnez le département</option>
-                    {departments.map(dept => (
-                      <option key={dept} value={dept} className="bg-slate-800">{dept}</option>
+                    {departments.map(d => (
+                      <option key={d.value} value={d.value} className="bg-slate-800">{d.label}</option>
                     ))}
                   </select>
                   {errors.department && <p className="text-red-400 text-sm">{errors.department}</p>}

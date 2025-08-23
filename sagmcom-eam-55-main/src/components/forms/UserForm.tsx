@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DialogFooter } from "@/components/ui/dialog";
 import { User, Save, X } from "lucide-react";
+import { roleOptions, departmentOptions, userStatusOptions } from "@/lib/enums";
 
 interface User {
   id?: string;
@@ -29,20 +30,9 @@ interface UserFormProps {
   existingUsers?: User[];
 }
 
-const roles = [
-  "Administrateur",
-  "Chef Opérateur", 
-  "Chef Technicien",
-  "Technicien"
-];
-
-const departments = [
-  "Production",
-  "Maintenance", 
-  "IT",
-  "Qualité",
-  "Logistique"
-];
+const roles = roleOptions;
+const departments = departmentOptions;
+const statuses = userStatusOptions;
 
 export const UserForm = ({ user, onSubmit, onCancel, isLoading = false, existingUsers = [] }: UserFormProps) => {
   const [formData, setFormData] = useState<User>({
@@ -205,9 +195,9 @@ export const UserForm = ({ user, onSubmit, onCancel, isLoading = false, existing
               <SelectValue placeholder="Sélectionner un rôle" />
             </SelectTrigger>
             <SelectContent className="glass border-white/20">
-              {roles.map(role => (
-                <SelectItem key={role} value={role} className="text-white hover:bg-white/10">
-                  {role}
+              {roles.map(r => (
+                <SelectItem key={r.value} value={r.value} className="text-white hover:bg-white/10">
+                  {r.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -226,9 +216,9 @@ export const UserForm = ({ user, onSubmit, onCancel, isLoading = false, existing
               <SelectValue placeholder="Sélectionner un département" />
             </SelectTrigger>
             <SelectContent className="glass border-white/20">
-              {departments.map(dept => (
-                <SelectItem key={dept} value={dept} className="text-white hover:bg-white/10">
-                  {dept}
+              {departments.map(d => (
+                <SelectItem key={d.value} value={d.value} className="text-white hover:bg-white/10">
+                  {d.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -247,9 +237,11 @@ export const UserForm = ({ user, onSubmit, onCancel, isLoading = false, existing
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="glass border-white/20">
-              <SelectItem value="active" className="text-white hover:bg-white/10">Actif</SelectItem>
-              <SelectItem value="inactive" className="text-white hover:bg-white/10">Inactif</SelectItem>
-              <SelectItem value="pending" className="text-white hover:bg-white/10">En attente</SelectItem>
+              {statuses.map(s => (
+                <SelectItem key={s.value} value={s.value.toLowerCase()} className="text-white hover:bg-white/10">
+                  {s.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
