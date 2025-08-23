@@ -5,20 +5,20 @@ import { jwtDecode } from 'jwt-decode'
 type DecodedToken = {
 	sub?: string
 	role?: string
+	department?: string
 	email?: string
 }
 
 function Welcome() {
 	const token = localStorage.getItem('token')
 
-	const { name, role } = useMemo(() => {
-		if (!token) return { name: '', role: '' }
+	const { department, role } = useMemo(() => {
+		if (!token) return { department: '', role: '' }
 		try {
 			const decoded = jwtDecode<DecodedToken>(token)
-			const email = decoded.email || decoded.sub || ''
-			return { name: email.split('@')[0] || email, role: decoded.role || '' }
+			return { department: decoded.department || '', role: decoded.role || '' }
 		} catch {
-			return { name: '', role: '' }
+			return { department: '', role: '' }
 		}
 	}, [token])
 
@@ -29,7 +29,7 @@ function Welcome() {
 	return (
 		<div style={{ display: 'grid', placeItems: 'center', height: '100vh', fontFamily: 'sans-serif' }}>
 			<h1>
-				Hello {name} your role is {role}
+				hello your department is '{department}' and your role is '{role}'
 			</h1>
 		</div>
 	)
