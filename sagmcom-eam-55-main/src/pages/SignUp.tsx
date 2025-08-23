@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Building2, ArrowLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -23,6 +24,7 @@ const SignUp = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Simulate existing CINs in database
   const existingCINs = [
@@ -127,15 +129,25 @@ const SignUp = () => {
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const payload = {
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        CIN: formData.cin,
+        role: (formData.role || "Technicien").toUpperCase().replace(" ", ""),
+        department: (formData.department || "Maintenance").toUpperCase(),
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        status: "PENDING",
+      };
+      await api.auth.register(payload);
+      toast({ title: "Compte créé", description: "Vérifiez votre email pour activer votre compte." });
+      navigate("/signin");
+    } catch (err: any) {
+      toast({ title: "Échec de l'inscription", description: err?.message || "Erreur lors de l'inscription", variant: "destructive" });
+    } finally {
       setIsLoading(false);
-      toast({
-        title: "Compte créé avec succès",
-        description: "Bienvenue sur la plateforme Sagemcom EAM !",
-      });
-      // In a real app, redirect to dashboard or email verification
-    }, 2000);
+    }
   };
 
   const roles = [
