@@ -29,7 +29,7 @@ public class AuthServiceImpl implements IAuthService {
     private final TokenService tokenService;
 
     @Override
-    public UserDto register(UserDto userDto) {
+    public UserDto register(UserDto userDto ) {
         if (userRepository.existsByEmail(userDto.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
@@ -93,13 +93,13 @@ public class AuthServiceImpl implements IAuthService {
     @Override
     public void verifyEmail(String token) {
         Optional<User> userOptional = tokenService.validateEmailVerificationToken(token);
-        
+
         if (userOptional.isEmpty()) {
             throw new RuntimeException("Invalid or expired verification token");
         }
 
         User user = userOptional.get();
-        
+
         if (user.getStatus() == StatusType.PENDING) {
             user.setStatus(StatusType.ACTIVE);
             userRepository.save(user);
@@ -150,7 +150,7 @@ public class AuthServiceImpl implements IAuthService {
 
     public void resetPasswordWithToken(String token, String newPassword) {
         Optional<User> userOptional = tokenService.validatePasswordResetToken(token);
-        
+
         if (userOptional.isEmpty()) {
             throw new RuntimeException("Invalid or expired reset token");
         }
@@ -158,7 +158,7 @@ public class AuthServiceImpl implements IAuthService {
         User user = userOptional.get();
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-        
+
         log.info("Mot de passe réinitialisé avec succès pour l'utilisateur : {}", user.getEmail());
     }
 

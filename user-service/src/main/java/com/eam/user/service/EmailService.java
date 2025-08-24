@@ -54,7 +54,8 @@ public class EmailService {
             throw new IllegalArgumentException("Recipient email cannot be null or empty");
         }
         log.debug("Sending password reset email to: {}", toEmail);
-        String resetUrl = baseUrl + "/api/auth/reset-password?token=" + resetToken;
+        // MODIFICATION ICI : Pointe directement vers le chemin frontend /reset-password
+        String resetUrl = baseUrl + "/reset-password?token=" + resetToken;
         Map<String, String> templateParams = new HashMap<>();
         templateParams.put("email", toEmail.trim());
         templateParams.put("from_name", fromEmail);
@@ -70,7 +71,7 @@ public class EmailService {
 
     private void sendEmail(String templateId, Map<String, String> templateParams) {
         String url = "https://api.emailjs.com/api/v1.0/email/send";
-        Map<String, Object> requestBody = new HashMap<>();
+        Map<String, Object> requestBody = new HashMap<>( );
         requestBody.put("service_id", emailjsServiceId);
         requestBody.put("template_id", templateId);
         requestBody.put("user_id", emailjsUserId);

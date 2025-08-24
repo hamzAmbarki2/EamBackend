@@ -29,17 +29,17 @@ public class TokenService {
     public VerificationToken generateEmailVerificationToken(User user) {
         // Marquer tous les anciens tokens de vérification comme utilisés
         tokenRepository.markAllTokensAsUsedByUserAndType(user, VerificationToken.TokenType.EMAIL_VERIFICATION);
-        
+
         String token = generateSecureToken();
         LocalDateTime expiryDate = LocalDateTime.now().plusHours(24); // Expire dans 24 heures
-        
+
         VerificationToken verificationToken = new VerificationToken(
-            token, 
-            user, 
-            VerificationToken.TokenType.EMAIL_VERIFICATION, 
-            expiryDate
+                token,
+                user,
+                VerificationToken.TokenType.EMAIL_VERIFICATION,
+                expiryDate
         );
-        
+
         return tokenRepository.save(verificationToken);
     }
 
@@ -49,17 +49,17 @@ public class TokenService {
     public VerificationToken generatePasswordResetToken(User user) {
         // Marquer tous les anciens tokens de réinitialisation comme utilisés
         tokenRepository.markAllTokensAsUsedByUserAndType(user, VerificationToken.TokenType.PASSWORD_RESET);
-        
+
         String token = generateSecureToken();
         LocalDateTime expiryDate = LocalDateTime.now().plusHours(1); // Expire dans 1 heure
-        
+
         VerificationToken verificationToken = new VerificationToken(
-            token, 
-            user, 
-            VerificationToken.TokenType.PASSWORD_RESET, 
-            expiryDate
+                token,
+                user,
+                VerificationToken.TokenType.PASSWORD_RESET,
+                expiryDate
         );
-        
+
         return tokenRepository.save(verificationToken);
     }
 
@@ -68,36 +68,36 @@ public class TokenService {
      */
     public Optional<User> validateEmailVerificationToken(String token) {
         Optional<VerificationToken> verificationToken = tokenRepository.findByToken(token);
-        
+
         if (verificationToken.isEmpty()) {
             log.warn("Token de vérification non trouvé : {}", token);
             return Optional.empty();
         }
-        
+
         VerificationToken vToken = verificationToken.get();
-        
+
         // Vérifier si le token est du bon type
         if (vToken.getTokenType() != VerificationToken.TokenType.EMAIL_VERIFICATION) {
             log.warn("Token de type incorrect pour la vérification d'e-mail : {}", token);
             return Optional.empty();
         }
-        
+
         // Vérifier si le token a expiré
         if (vToken.isExpired()) {
             log.warn("Token de vérification expiré : {}", token);
             return Optional.empty();
         }
-        
+
         // Vérifier si le token a déjà été utilisé
         if (vToken.isUsed()) {
             log.warn("Token de vérification déjà utilisé : {}", token);
             return Optional.empty();
         }
-        
+
         // Marquer le token comme utilisé
         vToken.markAsUsed();
         tokenRepository.save(vToken);
-        
+
         log.info("Token de vérification validé avec succès pour l'utilisateur : {}", vToken.getUser().getEmail());
         return Optional.of(vToken.getUser());
     }
@@ -107,37 +107,77 @@ public class TokenService {
      */
     public Optional<User> validatePasswordResetToken(String token) {
         Optional<VerificationToken> verificationToken = tokenRepository.findByToken(token);
-        
+
         if (verificationToken.isEmpty()) {
             log.warn("Token de réinitialisation non trouvé : {}", token);
             return Optional.empty();
         }
-        
+
         VerificationToken vToken = verificationToken.get();
-        
+
         // Vérifier si le token est du bon type
         if (vToken.getTokenType() != VerificationToken.TokenType.PASSWORD_RESET) {
             log.warn("Token de type incorrect pour la réinitialisation : {}", token);
             return Optional.empty();
         }
-        
+
         // Vérifier si le token a expiré
         if (vToken.isExpired()) {
             log.warn("Token de réinitialisation expiré : {}", token);
             return Optional.empty();
         }
-        
+
         // Vérifier si le token a déjà été utilisé
         if (vToken.isUsed()) {
             log.warn("Token de réinitialisation déjà utilisé : {}", token);
             return Optional.empty();
         }
-        
+
         // Marquer le token comme utilisé
         vToken.markAsUsed();
         tokenRepository.save(vToken);
-        
+
         log.info("Token de réinitialisation validé avec succès pour l'utilisateur : {}", vToken.getUser().getEmail());
+        return Optional.of(vToken.getUser());
+    }
+
+    /**
+     * MODIFICATION : Valide un token de réinitialisation de mot de passe pour la redirection
+     * sans le marquer comme utilisé (sera marqué lors de la confirmation finale)
+     */
+    public Optional<User> validatePasswordResetTokenForRedirect(String token) {
+        Optional<VerificationToken> verificationToken = tokenRepository.findByToken(token);
+
+        if (verificationToken.isEmpty()) {
+            log.warn("Token de réinitialisation non trouvé pour redirection : {}", token);
+            return Optional.empty();
+        }
+
+        VerificationToken vToken = verificationToken.get();
+
+        // Vérifier si le token est du bon type
+        if (vToken.getTokenType() != VerificationToken.TokenType.PASSWORD_RESET) {
+            log.warn("Token de type incorrect pour la réinitialisation (redirection) : {}", token);
+            return Optional.empty();
+        }
+
+        // Vérifier si le token a expiré
+        if (vToken.isExpired()) {
+            log.warn("Token de réinitialisation expiré (redirection) : {}", token);
+            return Optional.empty();
+        }
+
+        // Vérifier si le token a déjà été utilisé
+        if (vToken.isUsed()) {
+            log.warn("Token de réinitialisation déjà utilisé (redirection) : {}", token);
+            return Optional.empty();
+        }
+
+        // NE PAS marquer le token comme utilisé ici
+        // Il sera marqué comme utilisé lors de la confirmation finale dans resetPasswordWithToken
+
+        log.info("Token de réinitialisation validé pour redirection pour l'utilisateur : {}",
+                vToken.getUser().getEmail());
         return Optional.of(vToken.getUser());
     }
 
@@ -167,4 +207,3 @@ public class TokenService {
         log.info("Nettoyage des tokens expirés terminé");
     }
 }
-
